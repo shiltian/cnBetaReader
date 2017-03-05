@@ -1,52 +1,52 @@
 html {
     -webkit-text-size-adjust: none; /* Never autoresize text */
 }
+
 body {
     word-break: break-all;
     font-family: HelveticaNeue;
-    padding:5px;
+/*    padding:5px;*/
 }
+
 @media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
     body {
         padding: 5px 70px;
     }
 }
+
 h1 {
     margin-top: 5px;
     margin-bottom: 5px;
     font-size: 20px;
 }
+
 .source {
     text-align: right;
 }
+
 .time {
     text-align: right;
 }
-/*hr {
-    border: none;
-}
-hr.hairline {
-    border-bottom: 0.5px rgb(66, 191, 231) solid;
-}*/
 
 img, video, object, figure, iframe {
     max-width: 100%;
     display: block;
     margin: auto;
 }
+
 a:link {
     color: rgb(66, 191, 231);
 }
+
 iframe {
     background-color: black;
     border: none;
 }
+
 video {
     background-color: black;
 }
-strong {
-    font-weight: normal;
-}
+
 div.videoPlaceholder {
     margin: auto;
     max-width: 320px;
@@ -54,6 +54,7 @@ div.videoPlaceholder {
     background-color: black;
     position: relative;
 }
+
 div.videoForbidden {
     position:absolute;
     top:0;
@@ -66,4 +67,16 @@ div.videoForbidden {
     background-size: 62px 62px;
     background-repeat: no-repeat;
     background-position: center;
+}
+
+summary {
+  padding: 5px 5px 5px 5px;
+  border-top: solid 1px grey;
+  border-bottom: solid 1px grey;
+}
+
+summary p {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.8em;
 }

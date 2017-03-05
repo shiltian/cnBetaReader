@@ -9,12 +9,13 @@
 import UIKit
 
 class Article {
-  
+  var id = ""
   var title = ""
+  var url = ""
   var time = ""
   var thumbURL = ""
   var commentsCount = ""
   var image: UIImage?
-  var id = ""
-  
+  var content: String?
+  var summary: String?
 }
