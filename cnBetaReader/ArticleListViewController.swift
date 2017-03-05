@@ -25,14 +25,14 @@ class ArticleListViewController: UITableViewController {
     getData()
   }
   
-  // MARK: Init
+  // MARK: - Init
   
   required init?(coder aDecoder: NSCoder) {
     articlesList = [Article]()
     super.init(coder: aDecoder)
   }
   
-  // MARK: Data Source
+  // MARK: - Data Source
   
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return articlesList.count
@@ -45,7 +45,7 @@ class ArticleListViewController: UITableViewController {
     return cell
   }
   
-  // MARK: Delegate
+  // MARK: - Delegate
   
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     let article = articlesList[indexPath.row]
@@ -62,7 +62,7 @@ class ArticleListViewController: UITableViewController {
     }
   }
   
-  // MARK: Custom Function
+  // MARK: - Custom Function
   
   func configureDetailsForCell(_ cell: ArticleListCell, withArticleListItem item: Article) {
     cell.configureForArticleListCell(item)
@@ -107,7 +107,7 @@ class ArticleListViewController: UITableViewController {
       }
       let regexCommentCount: NSRegularExpression?
       do {
-        regexCommentCount = try NSRegularExpression(pattern: "\\d+次阅读", options: [.caseInsensitive])
+        regexCommentCount = try NSRegularExpression(pattern: "\\d+个意见", options: [.caseInsensitive])
       } catch {
         regexCommentCount = nil
       }

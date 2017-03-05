@@ -85,7 +85,6 @@ class ArticleViewController: UIViewController {
       htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: article.content!)
       webView.loadHTMLString(htmlTemplate, baseURL: Bundle.main.bundleURL)
     }
-    
   }
   
 }
