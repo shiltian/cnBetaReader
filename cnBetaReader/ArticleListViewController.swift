@@ -8,27 +8,30 @@
 
 import UIKit
 import Kanna
+import CoreData
 
-class ArticleListViewController: UITableViewController {
+class ArticleListViewController: UITableViewController, NSFetchedResultsControllerDelegate {
   
-  var articlesList: [Article]
+  var fetchResultController: NSFetchedResultsController<ArticleMO>!
+  
+  var articlesList: [ArticleMO] = []
   
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    // 添加下拉刷新
+    // Add the refresh control
     refreshControl = UIRefreshControl()
     refreshControl?.addTarget(self, action: #selector(ArticleListViewController.getData), for: UIControlEvents.valueChanged)
     tableView.addSubview(refreshControl!)
     
     refreshControl?.beginRefreshing()
-    getData()
+    
+    fetchDataFromLocalStorage()
   }
   
   // MARK: - Init
   
   required init?(coder aDecoder: NSCoder) {
-    articlesList = [Article]()
     super.init(coder: aDecoder)
   }
   
@@ -58,111 +61,40 @@ class ArticleListViewController: UITableViewController {
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
     if segue.identifier == "ShowArticle" {
       let controller = segue.destination as! ArticleViewController
-      controller.article = sender as! Article
+      controller.article = sender as! ArticleMO
     }
   }
   
   // MARK: - Custom Function
   
-  func configureDetailsForCell(_ cell: ArticleListCell, withArticleListItem item: Article) {
+  func configureDetailsForCell(_ cell: ArticleListCell, withArticleListItem item: ArticleMO) {
     cell.configureForArticleListCell(item)
   }
   
-  func getData() {
-    //    isLoading = true
-    tableView.reloadData()
-    
-    let urlString = "http://www.cnbeta.com"
-    
-    if let url = URL(string: urlString) {
-      let task = URLSession.shared.dataTask(with: url) {
-        (data, response, error) in
-        if let error = error {
-          print("Error: \(error)")
-        } else if response != nil {
-          let html = String(data: data!, encoding: .utf8)
-          if let html = html {
-            self.parseArticleList(data: html)
-          }
+  func fetchDataFromLocalStorage() {
+    let fetchRequest: NSFetchRequest<ArticleMO>! = ArticleMO.fetchRequest()
+    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+    if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+      let context = appDelegate.persistentContainer.viewContext
+      fetchResultController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+      fetchResultController.delegate = self
+      
+      do {
+        try fetchResultController.performFetch()
+        if let fetchedObjects = fetchResultController.fetchedObjects {
+          articlesList = fetchedObjects
+          tableView.reloadData()
         }
+      } catch {
+        print(error)
       }
-      task.resume()
+      refreshControl?.endRefreshing()
     }
   }
   
-  func parseArticleList(data: String) {
-    if let doc = HTML(html: data, encoding: .utf8) {
-      let articleList = doc.xpath("//div[@class='items-area']/div[@class='item']")
-      let regexID: NSRegularExpression?
-      do {
-        regexID = try NSRegularExpression(pattern: "\\d+", options: [.caseInsensitive])
-      } catch {
-        regexID = nil
-      }
-      let regexTime: NSRegularExpression?
-      do {
-        regexTime = try NSRegularExpression(pattern: "\\d\\d-\\d\\d \\d\\d:\\d\\d", options: [.caseInsensitive])
-      } catch {
-        regexTime = nil
-      }
-      let regexCommentCount: NSRegularExpression?
-      do {
-        regexCommentCount = try NSRegularExpression(pattern: "\\d+个意见", options: [.caseInsensitive])
-      } catch {
-        regexCommentCount = nil
-      }
-      for articleItem in articleList {
-        let urlAndTitle = articleItem.at_xpath(".//dl/dt/a")
-        let url: String?, title: String?, time: String?, commentCount: String?, id: String?
-        if let urlAndTitle = urlAndTitle {
-          url = urlAndTitle["href"]!
-          title = urlAndTitle.content!
-          if  let matchID = regexID?.firstMatch(in: url!, options: [], range: NSMakeRange(0, url!.characters.count)) {
-            id = (url! as NSString).substring(with: matchID.range)
-          } else {
-            id = nil
-          }
-        } else {
-          url = nil
-          title = nil
-          id = nil
-        }
-        
-        let status = articleItem.at_xpath(".//ul[@class='status']/li")?.content
-        if let status = status,
-          let matchTime = regexTime?.firstMatch(in: status, options: [], range: NSMakeRange(0, status.characters.count)),
-          let matchCommentCount = regexCommentCount?.firstMatch(in: status, options: [], range: NSMakeRange(0, status.characters.count)) {
-          time = (status as NSString).substring(with: matchTime.range)
-          let commentCountString = (status as NSString).substring(with: matchCommentCount.range)
-          commentCount = commentCountString.substring(to: commentCountString.index(commentCountString.endIndex, offsetBy: -3))
-        } else {
-          time = nil
-          commentCount = nil
-        }
-        
-        let thumbURL = articleItem.at_xpath(".//img")?["src"]
-        if let id = id, let title = title, let time = time, let commentCount = commentCount, let thumbURL = thumbURL, let url = url {
-          let article = Article()
-          article.id = id
-          article.url = url
-          article.thumbURL = thumbURL
-          article.time = time
-          article.commentsCount = commentCount
-          article.title = title
-          articlesList.append(article)
-        }
-        print("ID: \(id)")
-        print("Title: \(title)")
-        print("Time: \(time)")
-        print("Comment count: \(commentCount)")
-        print("Thumb URL: \(thumbURL)")
-        print("-----------------------------")
-        DispatchQueue.main.async {
-          self.refreshControl?.endRefreshing()
-          self.tableView.reloadData()
-        }
-      }
-    }
+  func getData() {
+    let httpFetcher = HTTPFetcher()
+    httpFetcher.fetchHomePage(completionHandler: fetchDataFromLocalStorage)
   }
   
 }

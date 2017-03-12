@@ -29,26 +29,29 @@ class ArticleListCell: UITableViewCell {
   
   // MARK: - User Function
   
-  func configureForArticleListCell(_ article: Article) {
+  func configureForArticleListCell(_ article: ArticleMO) {
     titleLabel.text = article.title
     timeLabel.text = article.time
-    commentsCountLabel.text = article.commentsCount
-    if article.image == nil {
-      if let url = URL(string: article.thumbURL) {
+    commentsCountLabel.text = article.commentCount!
+    if let thumb = article.thumb {
+      thumbnailView.image = UIImage(data: thumb as Data)
+    } else {
+      if let url = URL(string: article.thumbURL!) {
         let session = URLSession.shared
         let downloadTask = session.downloadTask(with: url, completionHandler: { url, response, error in
           if error == nil, let url = url, let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
             DispatchQueue.main.async {
-              article.image = image
-              self.thumbnailView.image = article.image
+              article.thumb = NSData(data: data)
+              self.thumbnailView.image = image
+              if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                appDelegate.saveContext()
+              }
             }
           }
         })
         downloadTask.resume()
         self.downloadTask = downloadTask
       }
-    } else {
-      thumbnailView.image = article.image
     }
   }
   

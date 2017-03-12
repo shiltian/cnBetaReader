@@ -8,51 +8,27 @@
 
 import UIKit
 import Kanna
+import CoreData
 
-class ArticleViewController: UIViewController {
+class ArticleViewController: UIViewController, NSFetchedResultsControllerDelegate {
   
   @IBOutlet weak var webView: UIWebView!
   @IBOutlet weak var commentButton: UIBarButtonItem!
   
-  var article: Article!
+  var article: ArticleMO!
+  var articleContent: ArticleContentMO?
+  var fetchResultController: NSFetchedResultsController<ArticleContentMO>!
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    
-    if article.content == nil {
-      retrieveArticle(articleURL: article.url)
-    } else {
-      updateWebView()
-    }
 
     // Set the comment button appearance
-    commentButton.title = article.commentsCount + "评论"
+    commentButton.title = article.commentCount! + "评论"
     commentButton.setTitleTextAttributes([NSFontAttributeName: UIFont.systemFont(ofSize: 15)], for: .normal)
     let barButtonImage = UIImage(named: "bar_button")?.resizableImage(withCapInsets: UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10))
     commentButton.setBackgroundImage(barButtonImage, for: .normal, barMetrics: .default)
-  }
-
-  func retrieveArticle(articleURL: String) {
-    if let url = URL(string: articleURL) {
-      let task = URLSession.shared.dataTask(with: url) {
-        (data, response, error) in
-        if let error = error {
-          print("Error: \(error)")
-        } else if response != nil {
-          let html = String(data: data!, encoding: .utf8)
-          if let html = html {
-            var content = self.parseArticle(data: html)
-            self.article.summary = content[0]
-            self.article.content = String()
-            for i in 1..<content.count {
-              self.article.content! += content[i]
-            }
-            self.updateWebView()
-          }
-        }
-      }
-      task.resume()
-    }
+    
+    fetchLocalArticleContent()
   }
 
   func parseArticle(data: String) -> [String] {
@@ -70,6 +46,35 @@ class ArticleViewController: UIViewController {
     return content
   }
   
+  func fetchLocalArticleContent() {
+    let fetchRequest: NSFetchRequest<ArticleContentMO>! = NSFetchRequest.init(entityName: "ArticleContent")
+    fetchRequest.predicate = NSPredicate.init(format: "id == \(article.id!)")
+    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
+    
+    if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+      let context = appDelegate.persistentContainer.viewContext
+      fetchResultController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+      fetchResultController.delegate = self
+      
+      do {
+        try fetchResultController.performFetch()
+        if let fetchedObjects = fetchResultController.fetchedObjects {
+          if fetchedObjects.count == 0 {
+            let httpFetcher = HTTPFetcher()
+            httpFetcher.fetchContent(id: article.id!, articleURL: article.url!, completionHandler: fetchLocalArticleContent)
+          } else if fetchedObjects.count != 1 {
+            print("Fatal error: there should be only one article whose id is \(article.id!)")
+          } else {
+            articleContent = fetchedObjects[0]
+            updateWebView()
+          }
+        }
+      } catch {
+        print(error)
+      }
+    }
+  }
+  
   func updateWebView() {
     let htmlURL = Bundle.main.url(forResource: "article", withExtension: "html")!
     var htmlTemplate: String?
@@ -79,10 +84,10 @@ class ArticleViewController: UIViewController {
       htmlTemplate = nil
     }
     if var htmlTemplate = htmlTemplate {
-      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- title -->", with: article.title)
-      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->", with: article.time)
-      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- summary -->", with: article.summary!)
-      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: article.content!)
+      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- title -->", with: article.title!)
+      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->", with: article.time!)
+      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- summary -->", with: articleContent!.summary!)
+      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: articleContent!.content!)
       webView.loadHTMLString(htmlTemplate, baseURL: Bundle.main.bundleURL)
     }
   }
