@@ -42,19 +42,10 @@ class HTTPFetcher {
                             return
                         }
                         
-                        // Set the regex for id, time and comment count
-                        var regexTime: NSRegularExpression?, regexCommentCount: NSRegularExpression?
-                        do {
-                            regexTime = try NSRegularExpression(pattern: "\\d\\d-\\d\\d \\d\\d:\\d\\d", options: [])
-                            regexCommentCount = try NSRegularExpression(pattern: "\\d+(?=个意见)", options: [])
-                        } catch {
-                            errorHandler("Error occurred when initializing the regex.")
-                            return
-                        }
-                        
                         // Process the downloaded item div
                         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
                             for itemDiv in doc.xpath("//div[@class='items-area']/div[@class='item']") {
+                                // Parse the title and url
                                 let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
                                 let urlElement = itemDiv.at_xpath(".//dl/dt/a")
                                 if let urlElement = urlElement {
@@ -71,27 +62,37 @@ class HTTPFetcher {
                                     errorHandler("Fatal error occurred when parsing the article url.")
                                     return
                                 }
-                                
+                                // Parse the submitted time and the comment number
                                 if let statusElement = itemDiv.at_xpath(".//ul[@class='status']/li") {
                                     let statusString = statusElement.content!
-                                    if let timeMatchResult = regexTime!.firstMatch(in: statusString, options: [], range: NSMakeRange(0, statusString.characters.count)),
-                                        let commentCountMathResult = regexCommentCount!.firstMatch(in: statusString, options: [], range: NSMakeRange(0, statusString.characters.count)) {
-                                        article.time = (statusString as NSString).substring(with: timeMatchResult.range)
-                                        article.commentCount = (statusString as NSString).substring(with: commentCountMathResult.range)
+                                    if let range = statusString.range(of: "\\d\\d-\\d\\d \\d\\d:\\d\\d", options: .regularExpression) {
+                                        article.time = statusString.substring(with: range)
+                                    } else {
+                                        errorHandler("Fatal error occurred when parsing the article time.")
+                                        return
+                                    }
+                                    if let range = statusString.range(of: "\\d+(?=个意见)", options: .regularExpression) {
+                                        article.commentCount = statusString.substring(with: range)
+                                    } else {
+                                        errorHandler("Fatal error occurred when parsing the article comment count.")
+                                        return
                                     }
                                 } else {
                                     errorHandler("Fatal error occurred when parsing the status.")
                                     return
                                 }
-                                
+                                // Parse the thumb url
                                 if let thumbDiv = itemDiv.at_xpath(".//img") {
                                     article.thumbURL = thumbDiv["src"]!
                                 } else {
                                     errorHandler("Fatal error occurred when parsing the thumb.")
                                     return
                                 }
+                                // Save to the Core Data
+                                // Note: This step prones to errors.
                                 appDelegate.saveContext()
                             }
+                            // Call the out completion handler
                             completionHandler()
                         } else {
                             errorHandler("Failed to get the app delegate.")
