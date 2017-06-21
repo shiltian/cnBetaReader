@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16E183b" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16F73" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Article" representedClassName="ArticleMO" syncable="YES" codeGenerationType="class">
         <attribute name="commentCount" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="id" attributeType="String" indexed="YES" syncable="YES"/>
@@ -8,6 +8,7 @@
         <attribute name="time" attributeType="String" syncable="YES"/>
         <attribute name="title" attributeType="String" syncable="YES"/>
         <attribute name="url" attributeType="String" syncable="YES"/>
+        <relationship name="top30article" optional="YES" toMany="YES" minCount="30" maxCount="30" deletionRule="Nullify" ordered="YES" destinationEntity="Article" inverseName="top30article" inverseEntity="Article" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -25,7 +26,7 @@
         </uniquenessConstraints>
     </entity>
     <elements>
-        <element name="Article" positionX="-27" positionY="36" width="128" height="150"/>
-        <element name="ArticleContent" positionX="-54" positionY="-9" width="128" height="90"/>
+        <element name="Article" positionX="-27" positionY="72" width="128" height="163"/>
+        <element name="ArticleContent" positionX="-180" positionY="72" width="128" height="90"/>
     </elements>
 </model>
