@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07F82BFB1EFBF4C700EE4198 /* CommentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */; };
 		0DD12EEC2DA7BE6B0359F1F7 /* Pods_cnBetaReader.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87E7DD49DA8B6CEA4BF6379C /* Pods_cnBetaReader.framework */; };
 		941EB6421C72E42A0049464E /* ArticleListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941EB6401C72E42A0049464E /* ArticleListCell.swift */; };
 		942885B71C78BC7100B259CF /* article.html in Resources */ = {isa = PBXBuildFile; fileRef = 942885B61C78BC7100B259CF /* article.html */; };
@@ -24,6 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentViewController.swift; sourceTree = "<group>"; };
 		2D0AD3CDBB92CC48059DE312 /* Pods-cnBetaReader.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-cnBetaReader.release.xcconfig"; path = "Pods/Target Support Files/Pods-cnBetaReader/Pods-cnBetaReader.release.xcconfig"; sourceTree = "<group>"; };
 		87E7DD49DA8B6CEA4BF6379C /* Pods_cnBetaReader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_cnBetaReader.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		890E29D2FADC3C7449EF81C8 /* Pods-cnBetaReader.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-cnBetaReader.debug.xcconfig"; path = "Pods/Target Support Files/Pods-cnBetaReader/Pods-cnBetaReader.debug.xcconfig"; sourceTree = "<group>"; };
@@ -98,6 +100,7 @@
 				94549B4A1C5F8137007F2EAF /* ArticleListViewController.swift */,
 				944525E71C744EF200EA055E /* ArticleViewController.swift */,
 				94C09CF11E6C36AC006FC6A3 /* HTTPFetcher.swift */,
+				07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07F82BFB1EFBF4C700EE4198 /* CommentViewController.swift in Sources */,
 				944525E81C744EF200EA055E /* ArticleViewController.swift in Sources */,
 				94C48C191C5115C2008946B0 /* Article.swift in Sources */,
 				94549B4B1C5F8137007F2EAF /* ArticleListViewController.swift in Sources */,

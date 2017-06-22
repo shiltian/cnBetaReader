@@ -12,14 +12,14 @@ class HTTPFetcher {
     
     static var loadMoreToken: String? = nil
     static var loadMoreParam: String? = nil
+    static var nextPage: Int = 2
+    static let baseURL = "http://www.cnbeta.com/"
     
     // MARK: - APIs
     
     // Fetch home page
     func fetchHomePage(completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
-        let urlString = "http://www.cnbeta.com"
-        
-        if let url = URL(string: urlString) {
+        if let url = URL(string: HTTPFetcher.baseURL) {
             let task = URLSession.shared.dataTask(with: url) {
                 (data, response, error) in
                 if let error = error {
@@ -27,6 +27,7 @@ class HTTPFetcher {
                 } else if let data = data {
                     if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8) {
                         // Set the load more token and param
+                        HTTPFetcher.nextPage = 2
                         let loadMoreTokenElement = doc.at_xpath("//meta[@name='csrf-token']")
                         if let homeMoreTokenElement = loadMoreTokenElement {
                             HTTPFetcher.loadMoreToken = homeMoreTokenElement["content"]!
@@ -140,14 +141,14 @@ class HTTPFetcher {
     }
     
     // Load more article
-    func loadMore() {
+    func loadMore(completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
         // Set the query items
         let epochTime = Int(NSDate().timeIntervalSince1970 * 1000)
-        let urlComponents = NSURLComponents(string: "http://www.cnbeta.com/home/more")
+        let urlComponents = NSURLComponents(string: "\(HTTPFetcher.baseURL)/home/more")
         urlComponents?.queryItems = [
             URLQueryItem(name: HTTPFetcher.loadMoreParam!, value: HTTPFetcher.loadMoreToken!),
             URLQueryItem(name: "type", value: "all"),
-            URLQueryItem(name: "page", value: "2"),
+            URLQueryItem(name: "page", value: "\(HTTPFetcher.nextPage)"),
             URLQueryItem(name: "_", value: "\(epochTime)")
         ]
         let url = urlComponents?.url
@@ -155,7 +156,7 @@ class HTTPFetcher {
             // Set the request header, otherwise the app cannot get the right more data.
             var request = URLRequest(url: url)
             // Important: The return json will be empty without the referer header.
-            request.setValue("http://www.cnbeta.com/", forHTTPHeaderField: "Referer")
+            request.setValue("\(HTTPFetcher.baseURL)", forHTTPHeaderField: "Referer")
             let task = URLSession.shared.dataTask(with: request) {
                 (data, response, error) in
                 if let error = error {
@@ -165,19 +166,30 @@ class HTTPFetcher {
                         let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
                         let moreArticlesList = (resJSON?["result"] as? [String: Any])?["list"] as? [Any]
                         if let moreArticlesList = moreArticlesList {
-                            for article in moreArticlesList {
-                                let _article = article as? [String: Any]
-                                let title = _article?["title"] as! String
-                                let articleURL = _article?["url_show"] as! String
-                                let id = _article?["sid"] as! String
-                                let comments = _article?["comments"] as! String
-                                let thumbURL = _article?["thumb"] as! String
-                                print("Title: \(title), url: \(articleURL), sid: \(id), comments: \(comments)")
+                            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                                for entity in moreArticlesList {
+                                    let _article = entity as? [String: Any]
+                                    let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
+                                    article.id = _article?["sid"] as? String
+                                    article.url = _article?["url_show"] as? String
+                                    article.title = _article?["title"] as? String
+                                    article.commentCount = _article?["comments"] as? String
+                                    article.thumbURL = _article?["thumb"] as? String
+                                    article.time = _article?["inputtime"] as? String
+                                    appDelegate.saveContext()
+                                }
+                            } else {
+                                errorHandler("Failed to get the app delegate.")
+                                return
                             }
                         }
                     } catch {
-                        print("error")
+                        let nserror = error as NSError
+                        errorHandler("Failed to serialize the JSON.\nError: \(nserror), detail: \(nserror.userInfo)")
+                        return
                     }
+                    completionHandler()
+                    HTTPFetcher.nextPage += 1
                 }
             }
             task.resume()

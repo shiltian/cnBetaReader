@@ -170,7 +170,7 @@
         <!--评论-->
         <scene sceneID="XhM-tB-2vd">
             <objects>
-                <viewController id="0bT-8N-UFu" sceneMemberID="viewController">
+                <viewController id="0bT-8N-UFu" customClass="CommentViewController" customModule="cnBetaReader" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="moL-fc-yhG"/>
                         <viewControllerLayoutGuide type="bottom" id="umR-Wv-UYp"/>
@@ -187,6 +187,12 @@
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="keyPath" value="NO"/>
                                 </userDefinedRuntimeAttributes>
                             </webView>
+                            <webView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UXh-90-Hzs">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <dataDetectorType key="dataDetectorTypes"/>
+                            </webView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -197,6 +203,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="评论" id="XHf-YL-Qkt"/>
+                    <connections>
+                        <outlet property="webView" destination="UXh-90-Hzs" id="UfT-dH-NpU"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Vct-xj-nTw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

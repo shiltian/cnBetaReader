@@ -69,6 +69,16 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
+    override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if scrollView == tableView {
+            if ((scrollView.contentOffset.y + scrollView.frame.size.height) >= scrollView.contentSize.height + 40) {
+                print("Ready to load more...")
+                loadMore()
+            }
+        }
+        
+    }
+    
     // MARK: - Navigation delegate
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -85,7 +95,11 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     }
     
     func fetchDataFromLocalStorage() {
-        fetchRequest.fetchLimit = 30
+        var limit = 30
+        if articlesList.count != 0 {
+            limit += 30
+        }
+        fetchRequest.fetchLimit = limit
         do {
             try fetchResultController.performFetch()
             if let fetchedObjects = fetchResultController.fetchedObjects {
@@ -104,6 +118,11 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     func getData() {
         let httpFetcher = HTTPFetcher()
         httpFetcher.fetchHomePage(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
+    }
+    
+    func loadMore() {
+        let httpFetcher = HTTPFetcher()
+        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
     }
     
     // MARK: - Error handler
