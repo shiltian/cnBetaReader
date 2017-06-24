@@ -9,6 +9,8 @@
 import UIKit
 
 class CommentViewController: UIViewController {
+    
+    let article: ArticleMO! = nil
 
     override func viewDidLoad() {
         super.viewDidLoad()

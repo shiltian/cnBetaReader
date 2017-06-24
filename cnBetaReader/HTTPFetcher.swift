@@ -167,8 +167,7 @@ class HTTPFetcher {
             URLQueryItem(name: "page", value: "\(HTTPFetcher.nextPage)"),
             URLQueryItem(name: "_", value: "\(epochTime)")
         ]
-        let url = urlComponents?.url
-        if let url = url {
+        if let url = urlComponents?.url {
             // Set the request header, otherwise the app cannot get the right more data.
             var request = URLRequest(url: url)
             // Important: The return json will be empty without the referer header.
@@ -180,24 +179,23 @@ class HTTPFetcher {
                 } else if let data = data {
                     do {
                         let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        let moreArticlesList = (resJSON?["result"] as? [String: Any])?["list"] as? [Any]
-                        if let moreArticlesList = moreArticlesList {
-                            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                                for entity in moreArticlesList {
-                                    let _article = entity as? [String: Any]
-                                    let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
-                                    article.id = Int64((_article?["sid"] as? String)!)!
-                                    article.url = _article?["url_show"] as? String
-                                    article.title = _article?["title"] as? String
-                                    article.commentCount = Int16((_article?["comments"] as? String)!)!
-                                    article.thumbURL = _article?["thumb"] as? String
-                                    article.time = HTTPFetcher.dateFormatter.date(from: _article?["inputtime"] as! String)! as NSDate
-                                    appDelegate.saveContext()
-                                }
-                            } else {
-                                errorHandler("Failed to get the app delegate.")
-                                return
+                        if let resJSON = resJSON,
+                            let list = resJSON["result"] as? [String: Any], let moreArticlesList = list["list"] as? [Any],
+                            let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                            for entity in moreArticlesList {
+                                let _article = entity as? [String: Any]
+                                let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
+                                article.id = Int64((_article?["sid"] as? String)!)!
+                                article.url = _article?["url_show"] as? String
+                                article.title = _article?["title"] as? String
+                                article.commentCount = Int16((_article?["comments"] as? String)!)!
+                                article.thumbURL = _article?["thumb"] as? String
+                                article.time = HTTPFetcher.dateFormatter.date(from: _article?["inputtime"] as! String)! as NSDate
+                                appDelegate.saveContext()
                             }
+                        } else {
+                            errorHandler("Failed to parse the response JSON.")
+                            return
                         }
                     } catch {
                         let nserror = error as NSError
@@ -216,7 +214,7 @@ class HTTPFetcher {
     func fetchCommentsOfArticle(article: ArticleMO, errorHandler: @escaping (_: String)->Void) {
         let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
         urlComponents?.queryItems = [
-            URLQueryItem(name: "op", value: "1,\(article.id),\(article.sn)")
+            URLQueryItem(name: "op", value: "1,\(article.id),\(article.sn!)")
         ]
         if let url = urlComponents?.url {
             let task = URLSession.shared.dataTask(with: url) {
