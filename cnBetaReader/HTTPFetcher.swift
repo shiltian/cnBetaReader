@@ -31,87 +31,83 @@ class HTTPFetcher {
                 (data, response, error) in
                 if let error = error {
                     errorHandler("Error: \(error)")
-                } else if let data = data {
-                    if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8) {
-                        // Set the load more token and param
-                        HTTPFetcher.nextPage = 2
-                        let loadMoreTokenElement = doc.at_xpath("//meta[@name='csrf-token']")
-                        if let homeMoreTokenElement = loadMoreTokenElement {
-                            HTTPFetcher.loadMoreToken = homeMoreTokenElement["content"]!
-                        } else {
-                            errorHandler("Fatal error: fail to parse csrf-token.")
-                            return
-                        }
-                        let loadMoreParamElement = doc.at_xpath("//meta[@name='csrf-param']")
-                        if let loadMoreParamElement = loadMoreParamElement {
-                            HTTPFetcher.loadMoreParam = loadMoreParamElement["content"]!
-                        } else {
-                            errorHandler("Fatal error: fail to parse csrf-param.")
-                            return
-                        }
-                        
-                        // Process the downloaded item div
-                        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                            for itemDiv in doc.xpath("//div[@class='items-area']/div[@class='item']") {
-                                // Parse the title and url
-                                let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
-                                let urlElement = itemDiv.at_xpath(".//dl/dt/a")
-                                if let urlElement = urlElement {
-                                    let url = urlElement["href"]!
-                                    article.url = url
-                                    article.title = urlElement.content!
-                                    if let range = url.range(of: "\\d+(?=\\.htm)", options: .regularExpression) {
-                                        article.id = Int64(url.substring(with: range))!
-                                    } else {
-                                        errorHandler("Fatal error occurred when parsing the article id.")
-                                        return
-                                    }
+                } else if let data = data, let html = String(data: data, encoding: .utf8),
+                    let doc = HTML(html: html, encoding: .utf8) {
+                    // Set the load more token and param
+                    HTTPFetcher.nextPage = 2
+                    if let homeMoreTokenElement = doc.at_xpath("//meta[@name='csrf-token']") {
+                        HTTPFetcher.loadMoreToken = homeMoreTokenElement["content"]!
+                    } else {
+                        errorHandler("Fatal error: fail to parse csrf-token.")
+                        return
+                    }
+                    if let loadMoreParamElement = doc.at_xpath("//meta[@name='csrf-param']") {
+                        HTTPFetcher.loadMoreParam = loadMoreParamElement["content"]!
+                    } else {
+                        errorHandler("Fatal error: fail to parse csrf-param.")
+                        return
+                    }
+                    
+                    // Process the downloaded item div
+                    if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                        for itemDiv in doc.xpath("//div[@class='items-area']/div[@class='item']") {
+                            // Parse the title and url
+                            let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
+                            if let urlElement = itemDiv.at_xpath(".//dl/dt/a") {
+                                let url = urlElement["href"]!
+                                article.url = url
+                                article.title = urlElement.content!
+                                if let range = url.range(of: "\\d+(?=\\.htm)", options: .regularExpression) {
+                                    article.id = Int64(url.substring(with: range))!
                                 } else {
-                                    errorHandler("Fatal error occurred when parsing the article url.")
+                                    errorHandler("Fatal error occurred when parsing the article id.")
                                     return
                                 }
-                                // Parse the submitted time and the comment number
-                                if let statusElement = itemDiv.at_xpath(".//ul[@class='status']/li") {
-                                    let statusString = statusElement.content!
-                                    if let range = statusString.range(of: "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}", options: .regularExpression) {
-                                        let date = HTTPFetcher.dateFormatter.date(from: statusString.substring(with: range))
-                                        if let date = date {
-                                            article.time = date as NSDate
-                                        } else {
-                                            errorHandler("Error when converting the date.")
-                                        }
-                                    } else {
-                                        errorHandler("Fatal error occurred when parsing the article time.")
-                                        return
-                                    }
-                                    if let range = statusString.range(of: "\\d+(?=个意见)", options: .regularExpression) {
-                                        article.commentCount = Int16(statusString.substring(with: range))!
-                                    } else {
-                                        errorHandler("Fatal error occurred when parsing the article comment count.")
-                                        return
-                                    }
-                                } else {
-                                    errorHandler("Fatal error occurred when parsing the status.")
-                                    return
-                                }
-                                // Parse the thumb url
-                                if let thumbDiv = itemDiv.at_xpath(".//img") {
-                                    article.thumbURL = thumbDiv["src"]!
-                                } else {
-                                    errorHandler("Fatal error occurred when parsing the thumb.")
-                                    return
-                                }
-                                // Save to the Core Data
-                                // Note: This step prones to errors.
-                                appDelegate.saveContext()
+                            } else {
+                                errorHandler("Fatal error occurred when parsing the article url.")
+                                return
                             }
-                            // Call the out completion handler
-                            completionHandler()
-                        } else {
-                            errorHandler("Failed to get the app delegate.")
+                            // Parse the submitted time and the comment number
+                            if let statusElement = itemDiv.at_xpath(".//ul[@class='status']/li") {
+                                let statusString = statusElement.content!
+                                if let range = statusString.range(of: "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}", options: .regularExpression) {
+                                    if let date = HTTPFetcher.dateFormatter.date(from: statusString.substring(with: range)) {
+                                        article.time = date as NSDate
+                                    } else {
+                                        errorHandler("Error when converting the date.")
+                                    }
+                                } else {
+                                    errorHandler("Fatal error occurred when parsing the article time.")
+                                    return
+                                }
+                                if let range = statusString.range(of: "\\d+(?=个意见)", options: .regularExpression) {
+                                    article.commentCount = Int16(statusString.substring(with: range))!
+                                } else {
+                                    errorHandler("Fatal error occurred when parsing the article comment count.")
+                                    return
+                                }
+                            } else {
+                                errorHandler("Fatal error occurred when parsing the status.")
+                                return
+                            }
+                            // Parse the thumb url
+                            if let thumbDiv = itemDiv.at_xpath(".//img") {
+                                article.thumbURL = thumbDiv["src"]!
+                            } else {
+                                errorHandler("Fatal error occurred when parsing the thumb.")
+                                return
+                            }
+                            // Save to the Core Data
+                            // Note: This step prones to errors.
+                            appDelegate.saveContext()
                         }
+                        // Call the out completion handler
+                        completionHandler()
+                    } else {
+                        errorHandler("Failed to get the app delegate.")
                     }
                 }
+                
             }
             task.resume()
         }
@@ -126,26 +122,33 @@ class HTTPFetcher {
                     print("Fatal error: \(error)")
                     return;
                 } else if let data = data {
-                    if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8) {
-                        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                            let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
-                            articleContent.id = article.id
-                            if let summary = doc.at_xpath("//div[@class='article-summary']//p") {
-                                articleContent.summary = String()
-                                articleContent.summary = summary.toHTML!
-                            } else {
-                                print("Failed to parse the summary…")
-                                return
-                            }
-                            articleContent.content = String()
-                            let paras = doc.xpath("//div[@class='article-content']")
-                            for para in paras {
-                                articleContent.content!.append(para.toHTML!)
-                            }
-                            appDelegate.saveContext()
-                            article.content = articleContent
-                            completionHandler()
+                    if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8),
+                        let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                        let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
+                        articleContent.id = article.id
+                        if let summary = doc.at_xpath("//div[@class='article-summary']//p") {
+                            articleContent.summary = String()
+                            articleContent.summary = summary.toHTML!
+                        } else {
+                            print("Failed to parse the summary…")
+                            return
                         }
+                        articleContent.content = String()
+                        let paras = doc.xpath("//div[@class='article-content']")
+                        for para in paras {
+                            articleContent.content!.append(para.toHTML!)
+                        }
+                        // Parse the sn of the artcile
+                        if let script = doc.at_xpath("//footer/following-sibling::script"), let scriptText = script.text,
+                            let range = scriptText.range(of: "(?<=SN:\")[0-9a-zA-Z]*(?=\")", options: .regularExpression) {
+                            article.sn = scriptText.substring(with: range)
+                        } else {
+                            print("Error occurred when parsing the sn of the article.")
+                            return
+                        }
+                        appDelegate.saveContext()
+                        article.content = articleContent
+                        completionHandler()
                     }
                 }
             }
@@ -210,13 +213,12 @@ class HTTPFetcher {
     }
     
     // Fetch the comments of the article
-    func fetchCommentsOfArticle(articleSID sid: String, articleSN sn: String, errorHandler: @escaping (_: String)->Void) {
+    func fetchCommentsOfArticle(article: ArticleMO, errorHandler: @escaping (_: String)->Void) {
         let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
         urlComponents?.queryItems = [
-            URLQueryItem(name: "op", value: "1,\(sid),\(sn)")
+            URLQueryItem(name: "op", value: "1,\(article.id),\(article.sn)")
         ]
-        let url = urlComponents?.url
-        if let url = url {
+        if let url = urlComponents?.url {
             let task = URLSession.shared.dataTask(with: url) {
                 (data, response, error) in
                 if let error = error {
@@ -224,7 +226,15 @@ class HTTPFetcher {
                 } else if let data = data {
                     do {
                         let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        let results = resJSON?["result"] as? [String: Any]
+                        if let results = resJSON?["result"] as? [String: Any],
+                            let cmntlist = results["cmntlist"] as? [Any],
+                            let cmntstore = results["cmntstore"] as? [[String: Any]] {
+                            for e in cmntlist {
+                                if let cmnt = e as? [String: String] {
+                                    print(cmnt["tid"])
+                                }
+                            }
+                        }
                     } catch {
                         let nserror = error as NSError
                         errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
@@ -233,6 +243,8 @@ class HTTPFetcher {
                 }
             }
             task.resume()
+        } else {
+            errorHandler("Error occurred when get the url of load more.")
         }
     }
 }

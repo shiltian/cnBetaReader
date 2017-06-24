@@ -3,12 +3,13 @@
     <entity name="Article" representedClassName="ArticleMO" syncable="YES" codeGenerationType="class">
         <attribute name="commentCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
+        <attribute name="sn" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumb" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="thumbURL" attributeType="String" syncable="YES"/>
         <attribute name="time" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="title" attributeType="String" syncable="YES"/>
         <attribute name="url" attributeType="String" syncable="YES"/>
-        <relationship name="comment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Comment" inverseName="article" inverseEntity="Comment" syncable="YES"/>
+        <relationship name="comment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Comment" syncable="YES"/>
         <relationship name="content" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ArticleContent" inverseName="article" inverseEntity="ArticleContent" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -35,13 +36,12 @@
         <attribute name="name" attributeType="String" defaultValueString="匿名人士" syncable="YES"/>
         <attribute name="tid" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
         <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="article" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Article" inverseName="comment" inverseEntity="Article" syncable="YES"/>
         <relationship name="children" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Comment" inverseName="parent" inverseEntity="Comment" syncable="YES"/>
         <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Comment" inverseName="children" inverseEntity="Comment" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Article" positionX="-27" positionY="72" width="128" height="180"/>
+        <element name="Article" positionX="-27" positionY="72" width="128" height="195"/>
         <element name="ArticleContent" positionX="-198" positionY="-126" width="128" height="105"/>
-        <element name="Comment" positionX="180" positionY="-85" width="128" height="195"/>
+        <element name="Comment" positionX="180" positionY="-85" width="128" height="180"/>
     </elements>
 </model>
