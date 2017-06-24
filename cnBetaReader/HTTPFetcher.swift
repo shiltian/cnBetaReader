@@ -13,13 +13,20 @@ class HTTPFetcher {
     static var loadMoreToken: String? = nil
     static var loadMoreParam: String? = nil
     static var nextPage: Int = 2
-    static let baseURL = "http://www.cnbeta.com/"
+    static let homePageURL = "http://www.cnbeta.com"
+    static let loadMoreURL = "\(HTTPFetcher.homePageURL)/home/more"
+    static let fetchCommentsURL = "\(HTTPFetcher.homePageURL)/comment/read"
+    static let dateFormatter = DateFormatter()
+    
+    init() {
+        HTTPFetcher.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+    }
     
     // MARK: - APIs
     
     // Fetch home page
     func fetchHomePage(completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
-        if let url = URL(string: HTTPFetcher.baseURL) {
+        if let url = URL(string: HTTPFetcher.homePageURL) {
             let task = URLSession.shared.dataTask(with: url) {
                 (data, response, error) in
                 if let error = error {
@@ -66,14 +73,19 @@ class HTTPFetcher {
                                 // Parse the submitted time and the comment number
                                 if let statusElement = itemDiv.at_xpath(".//ul[@class='status']/li") {
                                     let statusString = statusElement.content!
-                                    if let range = statusString.range(of: "\\d\\d-\\d\\d \\d\\d:\\d\\d", options: .regularExpression) {
-                                        article.time = statusString.substring(with: range)
+                                    if let range = statusString.range(of: "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}", options: .regularExpression) {
+                                        let date = HTTPFetcher.dateFormatter.date(from: statusString.substring(with: range))
+                                        if let date = date {
+                                            article.time = date as NSDate
+                                        } else {
+                                            errorHandler("Error when converting the date.")
+                                        }
                                     } else {
                                         errorHandler("Fatal error occurred when parsing the article time.")
                                         return
                                     }
                                     if let range = statusString.range(of: "\\d+(?=个意见)", options: .regularExpression) {
-                                        article.commentCount = statusString.substring(with: range)
+                                        article.commentCount = Int16(statusString.substring(with: range))!
                                     } else {
                                         errorHandler("Fatal error occurred when parsing the article comment count.")
                                         return
@@ -144,7 +156,7 @@ class HTTPFetcher {
     func loadMore(completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
         // Set the query items
         let epochTime = Int(NSDate().timeIntervalSince1970 * 1000)
-        let urlComponents = NSURLComponents(string: "\(HTTPFetcher.baseURL)/home/more")
+        let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
         urlComponents?.queryItems = [
             URLQueryItem(name: HTTPFetcher.loadMoreParam!, value: HTTPFetcher.loadMoreToken!),
             URLQueryItem(name: "type", value: "all"),
@@ -156,7 +168,7 @@ class HTTPFetcher {
             // Set the request header, otherwise the app cannot get the right more data.
             var request = URLRequest(url: url)
             // Important: The return json will be empty without the referer header.
-            request.setValue("\(HTTPFetcher.baseURL)", forHTTPHeaderField: "Referer")
+            request.setValue("\(HTTPFetcher.homePageURL)/", forHTTPHeaderField: "Referer")
             let task = URLSession.shared.dataTask(with: request) {
                 (data, response, error) in
                 if let error = error {
@@ -173,9 +185,9 @@ class HTTPFetcher {
                                     article.id = _article?["sid"] as? String
                                     article.url = _article?["url_show"] as? String
                                     article.title = _article?["title"] as? String
-                                    article.commentCount = _article?["comments"] as? String
+                                    article.commentCount = Int16((_article?["comments"] as? String)!)!
                                     article.thumbURL = _article?["thumb"] as? String
-                                    article.time = _article?["inputtime"] as? String
+                                    article.time = HTTPFetcher.dateFormatter.date(from: _article?["inputtime"] as! String)! as NSDate
                                     appDelegate.saveContext()
                                 }
                             } else {
@@ -185,11 +197,39 @@ class HTTPFetcher {
                         }
                     } catch {
                         let nserror = error as NSError
-                        errorHandler("Failed to serialize the JSON.\nError: \(nserror), detail: \(nserror.userInfo)")
+                        errorHandler("Failed to serialize the JSON when load more.\nError: \(nserror), detail: \(nserror.userInfo)")
                         return
                     }
                     completionHandler()
                     HTTPFetcher.nextPage += 1
+                }
+            }
+            task.resume()
+        }
+    }
+    
+    // Fetch the comments of the article
+    func fetchCommentsOfArticle(articleSID sid: String, articleSN sn: String, errorHandler: @escaping (_: String)->Void) {
+        let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "op", value: "1,\(sid),\(sn)")
+        ]
+        let url = urlComponents?.url
+        if let url = url {
+            let task = URLSession.shared.dataTask(with: url) {
+                (data, response, error) in
+                if let error = error {
+                    errorHandler("Error: \(error)")
+                } else if let data = data {
+                    do {
+                        let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        let results = resJSON?["result"] as? [String: Any]
+                    } catch {
+                        let nserror = error as NSError
+                        errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
+                        return
+                    }
+                    
                 }
             }
             task.resume()

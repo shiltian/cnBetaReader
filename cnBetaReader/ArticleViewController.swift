@@ -23,7 +23,7 @@ class ArticleViewController: UIViewController, NSFetchedResultsControllerDelegat
     super.viewDidLoad()
 
     // Set the comment button appearance
-    commentButton.title = article.commentCount! + "评论"
+    commentButton.title = "\(article.commentCount)评论"
     commentButton.setTitleTextAttributes([NSFontAttributeName: UIFont.systemFont(ofSize: 15)], for: .normal)
     let barButtonImage = UIImage(named: "bar_button")?.resizableImage(withCapInsets: UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10))
     commentButton.setBackgroundImage(barButtonImage, for: .normal, barMetrics: .default)
@@ -84,8 +84,10 @@ class ArticleViewController: UIViewController, NSFetchedResultsControllerDelegat
       htmlTemplate = nil
     }
     if var htmlTemplate = htmlTemplate {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MM-dd HH:mm"
       htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- title -->", with: article.title!)
-      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->", with: article.time!)
+      htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->", with: dateFormatter.string(from: article.time! as Date))
       htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- summary -->", with: articleContent!.summary!)
       htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: articleContent!.content!)
       webView.loadHTMLString(htmlTemplate, baseURL: Bundle.main.bundleURL)

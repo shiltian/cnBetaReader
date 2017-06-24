@@ -178,38 +178,13 @@
                     <view key="view" contentMode="scaleToFill" id="AWh-VZ-QBl">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <webView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qlb-Yu-N9m">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <dataDetectorType key="dataDetectorTypes"/>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="keyPath" value="NO"/>
-                                </userDefinedRuntimeAttributes>
-                            </webView>
-                            <webView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UXh-90-Hzs">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                <dataDetectorType key="dataDetectorTypes"/>
-                            </webView>
-                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                        <constraints>
-                            <constraint firstAttribute="trailing" secondItem="Qlb-Yu-N9m" secondAttribute="trailing" id="45z-6a-9zq"/>
-                            <constraint firstItem="umR-Wv-UYp" firstAttribute="top" secondItem="Qlb-Yu-N9m" secondAttribute="bottom" id="AHK-Er-YWq"/>
-                            <constraint firstItem="Qlb-Yu-N9m" firstAttribute="leading" secondItem="AWh-VZ-QBl" secondAttribute="leading" id="aIU-Ey-P15"/>
-                            <constraint firstItem="Qlb-Yu-N9m" firstAttribute="top" secondItem="AWh-VZ-QBl" secondAttribute="top" id="gl9-Iq-5gB"/>
-                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="评论" id="XHf-YL-Qkt"/>
-                    <connections>
-                        <outlet property="webView" destination="UXh-90-Hzs" id="UfT-dH-NpU"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Vct-xj-nTw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3069.5999999999999" y="-241.52923538230885"/>
+            <point key="canvasLocation" x="3130" y="-242"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="YBN-VT-sxt">

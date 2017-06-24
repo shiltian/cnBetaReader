@@ -21,7 +21,6 @@
 		94C48C0A1C51151F008946B0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 94C48C081C51151F008946B0 /* Main.storyboard */; };
 		94C48C0C1C51151F008946B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 94C48C0B1C51151F008946B0 /* Assets.xcassets */; };
 		94C48C0F1C51151F008946B0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 94C48C0D1C51151F008946B0 /* LaunchScreen.storyboard */; };
-		94C48C191C5115C2008946B0 /* Article.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94C48C181C5115C2008946B0 /* Article.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,7 +42,6 @@
 		94C48C0B1C51151F008946B0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		94C48C0E1C51151F008946B0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		94C48C101C51151F008946B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		94C48C181C5115C2008946B0 /* Article.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Article.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +78,6 @@
 		944525EA1C74516600EA055E /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				94C48C181C5115C2008946B0 /* Article.swift */,
 				94C09CF61E6C4E6A006FC6A3 /* ArticleCoreData.xcdatamodeld */,
 			);
 			name = Model;
@@ -276,7 +273,6 @@
 			files = (
 				07F82BFB1EFBF4C700EE4198 /* CommentViewController.swift in Sources */,
 				944525E81C744EF200EA055E /* ArticleViewController.swift in Sources */,
-				94C48C191C5115C2008946B0 /* Article.swift in Sources */,
 				94549B4B1C5F8137007F2EAF /* ArticleListViewController.swift in Sources */,
 				94C09CF21E6C36AC006FC6A3 /* HTTPFetcher.swift in Sources */,
 				94C09CF81E6C4E6A006FC6A3 /* ArticleCoreData.xcdatamodeld in Sources */,

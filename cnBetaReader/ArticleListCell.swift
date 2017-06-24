@@ -30,9 +30,11 @@ class ArticleListCell: UITableViewCell {
   // MARK: - User Function
   
   func configureForArticleListCell(_ article: ArticleMO) {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "MM-dd HH:mm"
     titleLabel.text = article.title
-    timeLabel.text = article.time
-    commentsCountLabel.text = article.commentCount!
+    timeLabel.text = dateFormatter.string(from: article.time! as Date)
+    commentsCountLabel.text = "\(article.commentCount)"
     if let thumb = article.thumb {
       thumbnailView.image = UIImage(data: thumb as Data)
     } else {
