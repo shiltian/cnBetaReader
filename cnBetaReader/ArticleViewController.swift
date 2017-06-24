@@ -10,7 +10,7 @@ import UIKit
 import Kanna
 import CoreData
 
-class ArticleViewController: UIViewController, NSFetchedResultsControllerDelegate {
+class ArticleViewController: UIViewController {
   
   @IBOutlet weak var webView: UIWebView!
   @IBOutlet weak var commentButton: UIBarButtonItem!
@@ -47,31 +47,12 @@ class ArticleViewController: UIViewController, NSFetchedResultsControllerDelegat
   }
   
   func fetchLocalArticleContent() {
-    let fetchRequest: NSFetchRequest<ArticleContentMO>! = NSFetchRequest.init(entityName: "ArticleContent")
-    fetchRequest.predicate = NSPredicate.init(format: "id == \(article.id!)")
-    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "id", ascending: false)]
-    
-    if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-      let context = appDelegate.persistentContainer.viewContext
-      fetchResultController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-      fetchResultController.delegate = self
-      
-      do {
-        try fetchResultController.performFetch()
-        if let fetchedObjects = fetchResultController.fetchedObjects {
-          if fetchedObjects.count == 0 {
-            let httpFetcher = HTTPFetcher()
-            httpFetcher.fetchContent(id: article.id!, articleURL: article.url!, completionHandler: fetchLocalArticleContent)
-          } else if fetchedObjects.count != 1 {
-            print("Fatal error: there should be only one article whose id is \(article.id!)")
-          } else {
-            articleContent = fetchedObjects[0]
-            updateWebView()
-          }
-        }
-      } catch {
-        print(error)
-      }
+    if let content = article.content {
+        articleContent = content
+        updateWebView()
+    } else {
+        let httpFetcher = HTTPFetcher()
+        httpFetcher.fetchContent(article: article, articleURL: article.url!, completionHandler: fetchLocalArticleContent)
     }
   }
   

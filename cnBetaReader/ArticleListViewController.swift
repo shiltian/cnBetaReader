@@ -122,7 +122,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     
     func loadMore() {
         let httpFetcher = HTTPFetcher()
-        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
+//        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
     }
     
     // MARK: - Error handler

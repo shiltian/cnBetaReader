@@ -61,7 +61,7 @@ class HTTPFetcher {
                                     article.url = url
                                     article.title = urlElement.content!
                                     if let range = url.range(of: "\\d+(?=\\.htm)", options: .regularExpression) {
-                                        article.id = url.substring(with: range)
+                                        article.id = Int64(url.substring(with: range))!
                                     } else {
                                         errorHandler("Fatal error occurred when parsing the article id.")
                                         return
@@ -118,7 +118,7 @@ class HTTPFetcher {
     }
     
     // Fetch article content
-    func fetchContent(id: String, articleURL: String, completionHandler: @escaping ()->Void) {
+    func fetchContent(article: ArticleMO, articleURL: String, completionHandler: @escaping ()->Void) {
         if let url = URL(string: articleURL) {
             let task = URLSession.shared.dataTask(with: url) {
                 (data, response, error) in
@@ -129,7 +129,7 @@ class HTTPFetcher {
                     if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8) {
                         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
                             let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
-                            articleContent.id = id
+                            articleContent.id = article.id
                             if let summary = doc.at_xpath("//div[@class='article-summary']//p") {
                                 articleContent.summary = String()
                                 articleContent.summary = summary.toHTML!
@@ -143,6 +143,7 @@ class HTTPFetcher {
                                 articleContent.content!.append(para.toHTML!)
                             }
                             appDelegate.saveContext()
+                            article.content = articleContent
                             completionHandler()
                         }
                     }
@@ -182,7 +183,7 @@ class HTTPFetcher {
                                 for entity in moreArticlesList {
                                     let _article = entity as? [String: Any]
                                     let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
-                                    article.id = _article?["sid"] as? String
+                                    article.id = Int64((_article?["sid"] as? String)!)!
                                     article.url = _article?["url_show"] as? String
                                     article.title = _article?["title"] as? String
                                     article.commentCount = Int16((_article?["comments"] as? String)!)!
@@ -229,7 +230,6 @@ class HTTPFetcher {
                         errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
                         return
                     }
-                    
                 }
             }
             task.resume()
