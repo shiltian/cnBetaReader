@@ -10,12 +10,13 @@ import UIKit
 
 class CommentViewController: UIViewController {
     
-    let article: ArticleMO! = nil
+    var article: ArticleMO!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        fetchComments()
     }
 
     override func didReceiveMemoryWarning() {
@@ -23,15 +24,27 @@ class CommentViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    // MARK: - User defined functions
+    
+    func fetchComments() {
+        let httpFetcher = HTTPFetcher()
+        httpFetcher.fetchCommentsOfArticle(article: article, completionHandler: updateView, errorHandler: errorHandler)
     }
-    */
+    
+    func updateView() {
+        if let comments = article.comments {
+            for comment in comments {
+                print(comment)
+            }
+        }
+        
+    }
+    
+    func errorHandler(errorMessage: String) {
+        print(errorMessage)
+        let alert = UIAlertController(title: "Error", message: errorMessage, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
 
 }

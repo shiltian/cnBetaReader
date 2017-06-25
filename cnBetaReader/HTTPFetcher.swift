@@ -75,6 +75,7 @@ class HTTPFetcher {
                                         article.time = date as NSDate
                                     } else {
                                         errorHandler("Error when converting the date.")
+                                        return
                                     }
                                 } else {
                                     errorHandler("Fatal error occurred when parsing the article time.")
@@ -211,8 +212,8 @@ class HTTPFetcher {
     }
     
     // Fetch the comments of the article
-    func fetchCommentsOfArticle(article: ArticleMO, errorHandler: @escaping (_: String)->Void) {
-        let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
+    func fetchCommentsOfArticle(article: ArticleMO, completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
+        let urlComponents = NSURLComponents(string: HTTPFetcher.fetchCommentsURL)
         urlComponents?.queryItems = [
             URLQueryItem(name: "op", value: "1,\(article.id),\(article.sn!)")
         ]
@@ -226,18 +227,65 @@ class HTTPFetcher {
                         let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
                         if let results = resJSON?["result"] as? [String: Any],
                             let cmntlist = results["cmntlist"] as? [Any],
-                            let cmntstore = results["cmntstore"] as? [[String: Any]] {
-                            for e in cmntlist {
-                                if let cmnt = e as? [String: String] {
-                                    print(cmnt["tid"])
+                            let cmntstore = results["cmntstore"] as? [String: Any] {
+                            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                                var commentsDict: [Int64: CommentMO] = [:]
+                                for e in cmntlist {
+                                    if let cmnt = e as? [String: String], let _tid = cmnt["tid"], let tid = Int64(_tid) {
+                                        let comment = CommentMO(context: appDelegate.persistentContainer.viewContext)
+                                        comment.tid = tid
+                                        commentsDict[tid] = comment
+                                        // Save to the core data
+                                        appDelegate.saveContext()
+                                    } else {
+                                        errorHandler("Error when converting to JSON.")
+                                        return
+                                    }
                                 }
+                                for e in cmntlist {
+                                    let cmnt = e as! [String: String]
+                                    if let _tid = cmnt["tid"], let tid = Int64(_tid) {
+                                        if let _pid = cmnt["pid"], let pid = Int64(_pid), pid != 0  {
+                                            commentsDict[tid]?.parent = commentsDict[pid]
+                                        }
+                                        if let comment = commentsDict[tid], let cmntDict = cmntstore[_tid] as? [String: String] {
+                                            let dateFormatter = DateFormatter()
+                                            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                                            if let date = cmntDict["date"],  let time = dateFormatter.date(from: date) {
+                                                comment.time = time as NSDate
+                                            } else {
+                                                errorHandler("Error when converting the date.")
+                                                return
+                                            }
+                                            comment.content = cmntDict["comment"]
+                                            comment.from = cmntDict["host_name"]
+                                            comment.name = cmntDict["name"]
+                                            if let score = cmntDict["score"], let like = Int16(score) {
+                                                comment.like = like
+                                            }
+                                            if let reason = cmntDict["reason"], let dislike = Int16(reason) {
+                                                comment.dislike = dislike
+                                            }
+                                        }
+                                    }
+                                }
+                                for comment in commentsDict {
+//                                    article.comments?
+                                }
+                            } else {
+                                errorHandler("Error when getting the app delegate.")
+                                return
                             }
+                        } else {
+                            errorHandler("Failed to parse the comments.")
+                            return
                         }
                     } catch {
                         let nserror = error as NSError
                         errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
                         return
                     }
+                    completionHandler()
                 }
             }
             task.resume()

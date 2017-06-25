@@ -30,6 +30,15 @@ class ArticleViewController: UIViewController {
         loadArticleContent()
     }
     
+    // MARK: - Navigation
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showComment" {
+            let controller = segue.destination as! CommentViewController
+            controller.article = article
+        }
+    }
+    
     // MARK: - User defined functions
     
     func parseArticle(data: String) -> [String] {

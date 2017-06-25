@@ -154,7 +154,7 @@
                         <barButtonItem key="rightBarButtonItem" title="999次评论" id="jYV-H0-Y7o">
                             <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
-                                <segue destination="0bT-8N-UFu" kind="show" id="8HK-GO-iN2"/>
+                                <segue destination="0bT-8N-UFu" kind="show" identifier="showComment" id="8HK-GO-iN2"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
