@@ -33,11 +33,13 @@ class CommentViewController: UIViewController {
     
     func updateView() {
         if let comments = article.comments {
+            print("length: \(comments.count)")
             for comment in comments {
-                print(comment)
+                if let comment = comment as? CommentMO {
+                    print(comment.content)
+                }
             }
         }
-        
     }
     
     func errorHandler(errorMessage: String) {
