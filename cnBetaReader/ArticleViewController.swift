@@ -62,7 +62,7 @@ class ArticleViewController: UIViewController {
             updateWebView()
         } else {
             let httpFetcher = HTTPFetcher()
-            httpFetcher.fetchContent(article: article, articleURL: article.url!, completionHandler: loadArticleContent)
+            httpFetcher.fetchContent(article: article, articleURL: article.url!, completionHandler: loadArticleContent, errorHandler: fetchDataError)
         }
     }
     
@@ -83,6 +83,13 @@ class ArticleViewController: UIViewController {
             htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: articleContent!.content!)
             webView.loadHTMLString(htmlTemplate, baseURL: Bundle.main.bundleURL)
         }
+    }
+    
+    func fetchDataError(errorMessage error: String) {
+        print(error)
+        let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
     
 }

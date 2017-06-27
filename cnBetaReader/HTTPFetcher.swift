@@ -113,7 +113,7 @@ class HTTPFetcher {
     }
     
     // Fetch article content
-    func fetchContent(article: ArticleMO, articleURL: String, completionHandler: @escaping ()->Void) {
+    func fetchContent(article: ArticleMO, articleURL: String, completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
         if let url = URL(string: articleURL) {
             let task = URLSession.shared.dataTask(with: url) {
                 (data, response, error) in
@@ -121,33 +121,38 @@ class HTTPFetcher {
                     print("Fatal error: \(error)")
                     return;
                 } else if let data = data {
-                    if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8),
-                        let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                        let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
-                        articleContent.id = article.id
-                        if let summary = doc.at_xpath("//div[@class='article-summary']//p") {
-                            articleContent.summary = String()
-                            articleContent.summary = summary.toHTML!
+                    DispatchQueue.main.async {
+                        if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8),
+                            let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                            let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
+                            articleContent.id = article.id
+                            if let summary = doc.at_xpath("//div[@class='article-summary']//p") {
+                                articleContent.summary = String()
+                                articleContent.summary = summary.toHTML!
+                            } else {
+                                errorHandler("Failed to parse the summary.")
+                                return
+                            }
+                            articleContent.content = String()
+                            let paras = doc.xpath("//div[@class='article-content']")
+                            for para in paras {
+                                articleContent.content!.append(para.toHTML!)
+                            }
+                            // Parse the sn of the artcile
+                            if let script = doc.at_xpath("//footer/following-sibling::script"), let scriptText = script.text,
+                                let range = scriptText.range(of: "(?<=SN:\")[0-9a-zA-Z]*(?=\")", options: .regularExpression) {
+                                article.sn = scriptText.substring(with: range)
+                            } else {
+                                errorHandler("Error occurred when parsing the sn of the article.")
+                                return
+                            }
+                            article.content = articleContent
+                            appDelegate.saveContext()
+                            completionHandler()
                         } else {
-                            print("Failed to parse the summary…")
+                            errorHandler("Failed to init the Kanna object.")
                             return
                         }
-                        articleContent.content = String()
-                        let paras = doc.xpath("//div[@class='article-content']")
-                        for para in paras {
-                            articleContent.content!.append(para.toHTML!)
-                        }
-                        // Parse the sn of the artcile
-                        if let script = doc.at_xpath("//footer/following-sibling::script"), let scriptText = script.text,
-                            let range = scriptText.range(of: "(?<=SN:\")[0-9a-zA-Z]*(?=\")", options: .regularExpression) {
-                            article.sn = scriptText.substring(with: range)
-                        } else {
-                            print("Error occurred when parsing the sn of the article.")
-                            return
-                        }
-                        article.content = articleContent
-                        appDelegate.saveContext()
-                        completionHandler()
                     }
                 }
             }
@@ -176,8 +181,15 @@ class HTTPFetcher {
                 if let error = error {
                     print("Error: \(error)")
                 } else if let data = data {
-                    do {
-                        let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    DispatchQueue.main.async {
+                        var resJSON: [String: Any]? = nil
+                        do {
+                            resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        } catch {
+                            let nserror = error as NSError
+                            errorHandler("Failed to serialize the JSON when load more.\nError: \(nserror), detail: \(nserror.userInfo)")
+                            return
+                        }
                         if let resJSON = resJSON,
                             let list = resJSON["result"] as? [String: Any], let moreArticlesList = list["list"] as? [Any],
                             let appDelegate = UIApplication.shared.delegate as? AppDelegate {
@@ -196,13 +208,9 @@ class HTTPFetcher {
                             errorHandler("Failed to parse the response JSON.")
                             return
                         }
-                    } catch {
-                        let nserror = error as NSError
-                        errorHandler("Failed to serialize the JSON when load more.\nError: \(nserror), detail: \(nserror.userInfo)")
-                        return
+                        HTTPFetcher.nextPage += 1
+                        completionHandler()
                     }
-                    completionHandler()
-                    HTTPFetcher.nextPage += 1
                 }
             }
             task.resume()
@@ -221,8 +229,16 @@ class HTTPFetcher {
                 if let error = error {
                     errorHandler("Error: \(error)")
                 } else if let data = data {
-                    do {
-                        let resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    DispatchQueue.main.async {
+                        var resJSON: [String: Any]? = nil
+                        do {
+                            resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                        } catch {
+                            let nserror = error as NSError
+                            errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
+                            return
+                        }
+                        
                         if let results = resJSON?["result"] as? [String: Any],
                             let cmntlist = results["cmntlist"] as? [Any],
                             let cmntstore = results["cmntstore"] as? [String: Any] {
@@ -278,16 +294,9 @@ class HTTPFetcher {
                                 errorHandler("Error when getting the app delegate.")
                                 return
                             }
-                        } else {
-                            errorHandler("Failed to parse the comments.")
-                            return
                         }
-                    } catch {
-                        let nserror = error as NSError
-                        errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
-                        return
+                        completionHandler()
                     }
-                    completionHandler()
                 }
             }
             task.resume()
