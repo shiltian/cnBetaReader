@@ -8,9 +8,10 @@
 
 import UIKit
 
-class CommentViewController: UIViewController {
+class CommentViewController: UITableViewController {
     
     var article: ArticleMO!
+    var comments: [CommentMO]?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,12 +33,11 @@ class CommentViewController: UIViewController {
     }
     
     func updateView() {
-        if let comments = article.comments {
+        comments = article.comments?.allObjects as? [CommentMO]
+        if let comments = comments {
             print("length: \(comments.count)")
             for comment in comments {
-                if let comment = comment as? CommentMO {
-                    print(comment.content)
-                }
+                print(comment.content)
             }
         }
     }

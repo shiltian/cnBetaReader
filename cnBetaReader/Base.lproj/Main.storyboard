@@ -154,7 +154,7 @@
                         <barButtonItem key="rightBarButtonItem" title="999次评论" id="jYV-H0-Y7o">
                             <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             <connections>
-                                <segue destination="0bT-8N-UFu" kind="show" identifier="showComment" id="8HK-GO-iN2"/>
+                                <segue destination="G99-0K-DJM" kind="show" identifier="showComments" id="UGC-BR-UE5"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -167,24 +167,94 @@
             </objects>
             <point key="canvasLocation" x="2328.8000000000002" y="-241.52923538230885"/>
         </scene>
-        <!--评论-->
-        <scene sceneID="XhM-tB-2vd">
+        <!--Comment View Controller-->
+        <scene sceneID="VdO-Ju-irL">
             <objects>
-                <viewController id="0bT-8N-UFu" customClass="CommentViewController" customModule="cnBetaReader" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="moL-fc-yhG"/>
-                        <viewControllerLayoutGuide type="bottom" id="umR-Wv-UYp"/>
-                    </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="AWh-VZ-QBl">
+                <tableViewController id="G99-0K-DJM" customClass="CommentViewController" customModule="cnBetaReader" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="150" sectionHeaderHeight="28" sectionFooterHeight="28" id="QPO-KQ-oew">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    </view>
-                    <navigationItem key="navigationItem" title="评论" id="XHf-YL-Qkt"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="Vct-xj-nTw" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="comment" rowHeight="150" id="9yC-v7-3Re">
+                                <rect key="frame" x="0.0" y="28" width="375" height="150"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9yC-v7-3Re" id="WeF-jn-C9o">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="150"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Pqw-eC-Ucb">
+                                            <rect key="frame" x="234" y="120" width="53.5" height="20.5"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="like" translatesAutoresizingMaskIntoConstraints="NO" id="p4H-cj-8DB">
+                                                    <rect key="frame" x="0.0" y="0.0" width="20" height="20.5"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="20" id="7YK-rh-Dxx"/>
+                                                        <constraint firstAttribute="height" constant="20" id="lCo-0d-1xA"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="100" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WSM-YW-xuE">
+                                                    <rect key="frame" x="25" y="0.0" width="28.5" height="20.5"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.64700800180435181" green="0.6470874547958374" blue="0.64698094129562378" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </stackView>
+                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" editable="NO" text="我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，我是评论，" translatesAutoresizingMaskIntoConstraints="NO" id="fGQ-tT-pBy">
+                                            <rect key="frame" x="8" y="39" width="359" height="72"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                        </textView>
+                                        <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Ngn-sz-yCh">
+                                            <rect key="frame" x="310" y="120" width="53.5" height="20.5"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="dislike" translatesAutoresizingMaskIntoConstraints="NO" id="OdB-8l-TPL">
+                                                    <rect key="frame" x="0.0" y="0.0" width="20" height="20.5"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="20" id="Hro-JS-slk"/>
+                                                        <constraint firstAttribute="height" constant="20" id="OMw-rw-mCT"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="100" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q7g-dV-ijh">
+                                                    <rect key="frame" x="25" y="0.0" width="28.5" height="20.5"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.64700800179999995" green="0.64708745479999996" blue="0.64698094129999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </stackView>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="匿名人士 [云南昆明]" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8tC-Z5-4o3">
+                                            <rect key="frame" x="8" y="8" width="155" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                            <color key="textColor" red="0.64700800179999995" green="0.64708745479999996" blue="0.64698094129999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="发表于 2017-06-28 00:11" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Aaq-oS-NR9">
+                                            <rect key="frame" x="193" y="8" width="174" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                            <color key="textColor" red="0.64700800179999995" green="0.64708745479999996" blue="0.64698094129999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="G99-0K-DJM" id="r8a-57-iG9"/>
+                            <outlet property="delegate" destination="G99-0K-DJM" id="IkY-Ae-DNb"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sEH-z3-zR7" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3130" y="-242"/>
+            <point key="canvasLocation" x="3125.5999999999999" y="-241.52923538230885"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="YBN-VT-sxt">
@@ -207,6 +277,8 @@
     </scenes>
     <resources>
         <image name="comment" width="20" height="20"/>
+        <image name="dislike" width="20" height="20"/>
+        <image name="like" width="20" height="20"/>
         <image name="time" width="20" height="20"/>
     </resources>
 </document>

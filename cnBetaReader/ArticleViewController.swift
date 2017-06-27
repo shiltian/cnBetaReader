@@ -33,7 +33,7 @@ class ArticleViewController: UIViewController {
     // MARK: - Navigation
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showComment" {
+        if segue.identifier == "showComments" {
             let controller = segue.destination as! CommentViewController
             controller.article = article
         }
