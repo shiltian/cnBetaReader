@@ -162,9 +162,11 @@
                     <connections>
                         <outlet property="commentButton" destination="jYV-H0-Y7o" id="Q1O-iW-L4Q"/>
                         <outlet property="webView" destination="7KI-cK-Wdu" id="ot5-Q7-5LH"/>
+                        <segue destination="zLV-P7-tOa" kind="unwind" identifier="UnwindArticle" unwindAction="returnActionFor:" id="cd6-Ye-4ml"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QHo-Rg-2ut" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="zLV-P7-tOa" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="2328.8000000000002" y="-241.52923538230885"/>
         </scene>

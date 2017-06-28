@@ -33,6 +33,11 @@ class ArticleListCell: UITableViewCell {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MM-dd HH:mm"
         titleLabel.text = article.title
+        if article.read {
+            titleLabel.textColor = UIColor.gray
+        } else {
+            titleLabel.textColor = UIColor.black
+        }
         timeLabel.text = dateFormatter.string(from: article.time! as Date)
         commentsCountLabel.text = "\(article.commentCount)"
         if let thumb = article.thumb {

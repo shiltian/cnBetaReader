@@ -121,7 +121,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     }
     
     func loadMore() {
-        let httpFetcher = HTTPFetcher()
+//        let httpFetcher = HTTPFetcher()
 //        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
     }
     
@@ -136,6 +136,13 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func returnAction(for segue: UIStoryboardSegue) {
+        if segue.identifier == "UnwindArticle" {
+            print("OOOOO!!")
+            tableView.reloadData()
+        }
     }
     
 }

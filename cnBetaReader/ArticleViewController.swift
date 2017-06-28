@@ -28,6 +28,7 @@ class ArticleViewController: UIViewController {
         commentButton.setBackgroundImage(barButtonImage, for: .normal, barMetrics: .default)
         
         loadArticleContent()
+        article.read = true
     }
     
     // MARK: - Navigation
@@ -40,21 +41,6 @@ class ArticleViewController: UIViewController {
     }
     
     // MARK: - User defined functions
-    
-    func parseArticle(data: String) -> [String] {
-        var content = [String]()
-        if let doc = HTML(html: data, encoding: .utf8) {
-            let summary = doc.at_xpath("//div[@class='article-summary']//p")
-            if let summary = summary {
-                content.append(summary.toHTML!)
-            }
-            let paras = doc.xpath("//div[@class='article-content']")
-            for para in paras {
-                content.append(para.toHTML!)
-            }
-        }
-        return content
-    }
     
     func loadArticleContent() {
         if let content = article.content {
