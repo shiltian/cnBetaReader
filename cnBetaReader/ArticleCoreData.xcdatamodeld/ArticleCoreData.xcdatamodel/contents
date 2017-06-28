@@ -2,7 +2,8 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16F73" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Article" representedClassName="ArticleMO" syncable="YES" codeGenerationType="class">
         <attribute name="commentCount" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
+        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="read" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="sn" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumb" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="thumbURL" attributeType="String" syncable="YES"/>
@@ -19,7 +20,7 @@
     </entity>
     <entity name="ArticleContent" representedClassName="ArticleContentMO" syncable="YES" codeGenerationType="class">
         <attribute name="content" attributeType="String" syncable="YES"/>
-        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
+        <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="summary" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="article" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Article" inverseName="content" inverseEntity="Article" syncable="YES"/>
         <uniquenessConstraints>
@@ -31,10 +32,10 @@
     <entity name="Comment" representedClassName="CommentMO" syncable="YES" codeGenerationType="class">
         <attribute name="content" attributeType="String" syncable="YES"/>
         <attribute name="dislike" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="from" attributeType="String" syncable="YES"/>
+        <attribute name="from" attributeType="String" defaultValueString="未知" syncable="YES"/>
         <attribute name="like" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="name" attributeType="String" defaultValueString="匿名人士" syncable="YES"/>
-        <attribute name="tid" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" indexed="YES" syncable="YES"/>
+        <attribute name="tid" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="time" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="article" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Article" inverseName="comments" inverseEntity="Article" syncable="YES"/>
         <relationship name="children" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Comment" inverseName="parent" inverseEntity="Comment" syncable="YES"/>
@@ -46,8 +47,8 @@
         </uniquenessConstraints>
     </entity>
     <elements>
-        <element name="Article" positionX="-27" positionY="72" width="128" height="195"/>
+        <element name="Article" positionX="-27" positionY="72" width="128" height="210"/>
         <element name="ArticleContent" positionX="-198" positionY="-126" width="128" height="105"/>
-        <element name="Comment" positionX="180" positionY="-85" width="128" height="195"/>
+        <element name="Comment" positionX="180" positionY="-85" width="128" height="30"/>
     </elements>
 </model>

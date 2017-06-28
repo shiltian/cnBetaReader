@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07996DC31F03B7540023A78C /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07996DC21F03B7540023A78C /* CommentCell.swift */; };
 		07F82BFB1EFBF4C700EE4198 /* CommentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */; };
 		0DD12EEC2DA7BE6B0359F1F7 /* Pods_cnBetaReader.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87E7DD49DA8B6CEA4BF6379C /* Pods_cnBetaReader.framework */; };
 		941EB6421C72E42A0049464E /* ArticleListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941EB6401C72E42A0049464E /* ArticleListCell.swift */; };
@@ -24,6 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		07996DC21F03B7540023A78C /* CommentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
 		07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentViewController.swift; sourceTree = "<group>"; };
 		2D0AD3CDBB92CC48059DE312 /* Pods-cnBetaReader.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-cnBetaReader.release.xcconfig"; path = "Pods/Target Support Files/Pods-cnBetaReader/Pods-cnBetaReader.release.xcconfig"; sourceTree = "<group>"; };
 		87E7DD49DA8B6CEA4BF6379C /* Pods_cnBetaReader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_cnBetaReader.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				941EB6401C72E42A0049464E /* ArticleListCell.swift */,
+				07996DC21F03B7540023A78C /* CommentCell.swift */,
 			);
 			name = View;
 			sourceTree = "<group>";
@@ -278,6 +281,7 @@
 				94C09CF81E6C4E6A006FC6A3 /* ArticleCoreData.xcdatamodeld in Sources */,
 				941EB6421C72E42A0049464E /* ArticleListCell.swift in Sources */,
 				94C48C031C51151F008946B0 /* AppDelegate.swift in Sources */,
+				07996DC31F03B7540023A78C /* CommentCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
