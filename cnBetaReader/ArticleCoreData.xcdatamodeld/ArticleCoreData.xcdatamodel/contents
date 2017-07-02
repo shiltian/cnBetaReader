@@ -46,9 +46,15 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
+    <entity name="LoadMore" representedClassName="LoadMoreMO" syncable="YES" codeGenerationType="class">
+        <attribute name="page" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="param" attributeType="String" syncable="YES"/>
+        <attribute name="token" attributeType="String" syncable="YES"/>
+    </entity>
     <elements>
         <element name="Article" positionX="-27" positionY="72" width="128" height="210"/>
         <element name="ArticleContent" positionX="-198" positionY="-126" width="128" height="105"/>
         <element name="Comment" positionX="180" positionY="-85" width="128" height="30"/>
+        <element name="LoadMore" positionX="0" positionY="18" width="128" height="90"/>
     </elements>
 </model>

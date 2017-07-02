@@ -15,6 +15,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     var fetchResultController: NSFetchedResultsController<ArticleMO>!
     var articlesList: [ArticleMO] = []
     let fetchRequest: NSFetchRequest<ArticleMO> = ArticleMO.fetchRequest()
+    let httpFetcher = HTTPFetcher()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,12 +26,13 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         // Add the refresh control
         refreshControl = UIRefreshControl()
         if let refreshControl = refreshControl {
-            refreshControl.addTarget(self, action: #selector(ArticleListViewController.getData), for: UIControlEvents.valueChanged)
+            refreshControl.addTarget(self, action: #selector(ArticleListViewController.getData), for: .valueChanged)
+            refreshControl.attributedTitle = NSAttributedString.init(string: "下拉更新")
             tableView.addSubview(refreshControl)
-            refreshControl.beginRefreshing()
         }
-        
-        fetchDataFromLocalStorage()
+        tableView.setContentOffset(CGPoint(x: 0, y: -44), animated: true)
+        refreshControl?.beginRefreshing()
+        refreshControl?.sendActions(for: .valueChanged)
     }
     
     // MARK: - Init
@@ -95,10 +97,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     }
     
     func fetchDataFromLocalStorage() {
-        var limit = 30
-        if articlesList.count != 0 {
-            limit += 30
-        }
+        let limit = articlesList.count + 30
         fetchRequest.fetchLimit = limit
         do {
             try fetchResultController.performFetch()
@@ -110,19 +109,17 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
             print(error)
         }
         // End freshing if needed
-        if refreshControl != nil && refreshControl!.isRefreshing {
-            refreshControl!.endRefreshing()
+        if let refreshControl = refreshControl, refreshControl.isRefreshing {
+            refreshControl.endRefreshing()
         }
     }
     
     func getData() {
-        let httpFetcher = HTTPFetcher()
         httpFetcher.fetchHomePage(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
     }
     
     func loadMore() {
-//        let httpFetcher = HTTPFetcher()
-//        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
+        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
     }
     
     // MARK: - Error handler
