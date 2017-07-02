@@ -31,18 +31,23 @@ class CommentViewController: UITableViewController {
     // MARK: - Data Source
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let comments = comments {
+        if let comments = comments, comments.count != 0 {
             return comments.count
         } else {
-            return 0
+            return 1
         }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CommentCell", for: indexPath) as! CommentCell
-        let item = comments![indexPath.row]
-        configureDetailsForCell(cell: cell, withArticleListItem: item)
-        return cell
+        if let comments = comments, comments.count != 0 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "CommentCell", for: indexPath) as! CommentCell
+            let item = comments[indexPath.row]
+            configureDetailsForCell(cell: cell, withArticleListItem: item)
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "NoCommentCell", for: indexPath)
+            return cell
+        }
     }
     
     // MARK: - User defined functions
@@ -56,7 +61,6 @@ class CommentViewController: UITableViewController {
         comments = article.comments?.allObjects as? [CommentMO]
         comments?.sort { $0.time!.timeIntervalSinceReferenceDate > $1.time!.timeIntervalSinceReferenceDate }
         tableView.reloadData()
-        
     }
     
     func errorHandler(errorMessage: String) {
