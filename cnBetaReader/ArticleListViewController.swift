@@ -137,6 +137,11 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         present(alert, animated: true, completion: nil)
+        
+        // End freshing if needed
+        if let refreshControl = refreshControl, refreshControl.isRefreshing {
+            refreshControl.endRefreshing()
+        }
     }
     
 }
