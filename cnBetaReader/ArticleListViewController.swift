@@ -35,6 +35,11 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         refreshControl?.sendActions(for: .valueChanged)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+    }
+    
     // MARK: - Init
     
     required init?(coder aDecoder: NSCoder) {
@@ -78,7 +83,6 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
                 loadMore()
             }
         }
-        
     }
     
     // MARK: - Navigation delegate
@@ -133,13 +137,6 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         present(alert, animated: true, completion: nil)
-    }
-    
-    @IBAction func returnAction(for segue: UIStoryboardSegue) {
-        if segue.identifier == "UnwindArticle" {
-            print("OOOOO!!")
-            tableView.reloadData()
-        }
     }
     
 }
