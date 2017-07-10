@@ -102,7 +102,7 @@ class HTTPFetcher {
             return
         }
         // Set the query items
-        let epochTime = Int(NSDate().timeIntervalSince1970 * 1000)
+        let epochTime = Int64(NSDate().timeIntervalSince1970 * 1000)
         let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
         urlComponents?.queryItems = [
             URLQueryItem(name: HTTPFetcher.loadMoreParam!, value: HTTPFetcher.loadMoreToken!),
