@@ -6,7 +6,7 @@
 //  Copyright © 2017 TSL. All rights reserved.
 //
 
-import Kanna
+//import Kanna
 import CoreData
 
 class HTTPFetcher {

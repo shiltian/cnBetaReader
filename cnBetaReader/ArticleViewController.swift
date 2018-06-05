@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Kanna
+//import Kanna
 import CoreData
 
 class ArticleViewController: UIViewController {

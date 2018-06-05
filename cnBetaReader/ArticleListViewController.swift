@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Kanna
+//import Kanna
 import CoreData
 
 class ArticleListViewController: UITableViewController, NSFetchedResultsControllerDelegate {
