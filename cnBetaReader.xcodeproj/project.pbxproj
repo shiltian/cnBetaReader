@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07516CF220C833AE00162752 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07516CF120C833AE00162752 /* Error.swift */; };
 		0789A43C1F0A774100207BC2 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0789A43B1F0A774100207BC2 /* MoreViewController.swift */; };
 		07996DC31F03B7540023A78C /* CommentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07996DC21F03B7540023A78C /* CommentCell.swift */; };
 		07F82BFB1EFBF4C700EE4198 /* CommentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		07516CF120C833AE00162752 /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		0789A43B1F0A774100207BC2 /* MoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreViewController.swift; sourceTree = "<group>"; };
 		07996DC21F03B7540023A78C /* CommentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentCell.swift; sourceTree = "<group>"; };
 		07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentViewController.swift; sourceTree = "<group>"; };
@@ -59,6 +61,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		07516CF020C8339500162752 /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				07516CF120C833AE00162752 /* Error.swift */,
+				94C09CF11E6C36AC006FC6A3 /* HTTPFetcher.swift */,
+			);
+			name = Helper;
+			sourceTree = "<group>";
+		};
 		4DEA7AD4D3FD544B4BDA9AF9 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -108,7 +119,6 @@
 			children = (
 				94549B4A1C5F8137007F2EAF /* ArticleListViewController.swift */,
 				944525E71C744EF200EA055E /* ArticleViewController.swift */,
-				94C09CF11E6C36AC006FC6A3 /* HTTPFetcher.swift */,
 				07F82BFA1EFBF4C600EE4198 /* CommentViewController.swift */,
 				0789A43B1F0A774100207BC2 /* MoreViewController.swift */,
 			);
@@ -136,6 +146,7 @@
 		94C48C011C51151F008946B0 /* cnBetaReader */ = {
 			isa = PBXGroup;
 			children = (
+				07516CF020C8339500162752 /* Helper */,
 				944525EA1C74516600EA055E /* Model */,
 				944525EB1C74517200EA055E /* View */,
 				944525EC1C74518800EA055E /* Controller */,
@@ -273,6 +284,7 @@
 				94C09CF81E6C4E6A006FC6A3 /* ArticleCoreData.xcdatamodeld in Sources */,
 				941EB6421C72E42A0049464E /* ArticleListCell.swift in Sources */,
 				94C48C031C51151F008946B0 /* AppDelegate.swift in Sources */,
+				07516CF220C833AE00162752 /* Error.swift in Sources */,
 				07996DC31F03B7540023A78C /* CommentCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -6,17 +6,14 @@
 //  Copyright © 2017 TSL. All rights reserved.
 //
 
-//import Kanna
+import SwiftSoup
 import CoreData
 
 class HTTPFetcher {
-    
-    static var loadMoreToken: String? = nil
-    static var loadMoreParam: String? = nil
-    static var nextPage: Int = 2
-    static let homePageURL = "http://www.cnbeta.com"
-    static let loadMoreURL = "\(HTTPFetcher.homePageURL)/home/more"
-    static let fetchCommentsURL = "\(HTTPFetcher.homePageURL)/comment/read"
+
+    static var page: Int8 = 2
+    static let timelineURL = "https://m.cnbeta.com/touch/default/timeline.json?page="
+    static let fetchCommentsURL = "https://www.cnbeta.com/comment/read"
     static let dateFormatter = DateFormatter()
     
     static var loadMore: LoadMoreMO!
@@ -26,134 +23,76 @@ class HTTPFetcher {
     }
     
     // MARK: - APIs
-    
+    // TODO: - Refine these APIs without the errorHandler
+
     // Fetch home page
-    func fetchHomePage(completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
-        if let url = URL(string: HTTPFetcher.homePageURL) {
-            let task = URLSession.shared.dataTask(with: url) {
-                (data, response, error) in
-                if let error = error {
-                    errorHandler("Error: \(error)")
-                } else if let data = data {
-                    DispatchQueue.main.async {
-                        self.parseArticle(data: data, completionHandler: completionHandler, errorHandler: errorHandler)
+    func fetchTimeline(loadMore: Bool, handler: @escaping (AsyncResult)->Void) {
+        var timelineURL: String
+        if loadMore {
+            timelineURL = "\(HTTPFetcher.timelineURL)\(HTTPFetcher.page)"
+        } else {
+            timelineURL = "\(HTTPFetcher.timelineURL)1"
+        }
+        guard let url = URL(string: timelineURL) else {
+            // Failed to create URL object
+            handler(.Failure(HTTPFetcherError(message: "failed to create URL object", kind: .internalError)))
+            return
+        }
+        let task = URLSession.shared.dataTask(with: url) {
+            (data, response, error) in
+            if let error = error {
+                handler(.Failure(error))
+                return
+            }
+            guard let data = data else {
+                // the retrieved data is nil
+                handler(.Failure(HTTPFetcherError(message: "retried homepage data is nil", kind: .dataError)))
+                return
+            }
+            DispatchQueue.main.async {
+                do {
+                    try self.parseArticleList(data: data)
+                    if !loadMore {
+                        HTTPFetcher.page = 1
+                    } else {
+                        HTTPFetcher.page += 1
                     }
+                    handler(.Success)
+                } catch {
+                    handler(.Failure(error))
                 }
             }
-            task.resume()
         }
+        task.resume()
     }
     
     // Fetch article content
-    func fetchContent(article: ArticleMO, articleURL: String, completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
-        if let url = URL(string: articleURL) {
-            let task = URLSession.shared.dataTask(with: url) {
-                (data, response, error) in
-                if let error = error {
-                    print("Fatal error: \(error)")
-                    return;
-                } else if let data = data {
-                    DispatchQueue.main.async {
-                        if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8),
-                            let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                            let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
-                            articleContent.id = article.id
-                            if let summary = doc.at_xpath("//div[@class='article-summary']//p") {
-                                articleContent.summary = String()
-                                articleContent.summary = summary.toHTML!
-                            } else {
-                                print("Failed to parse the summary.")
-                                errorHandler("解析文章摘要错误，请重试。")
-                                return
-                            }
-                            articleContent.content = String()
-                            let paras = doc.xpath("//div[@class='article-content']")
-                            for para in paras {
-                                articleContent.content!.append(para.toHTML!)
-                            }
-                            // Parse the sn of the artcile
-                            if let script = doc.at_xpath("//footer/following-sibling::script"), let scriptText = script.text,
-                                let range = scriptText.range(of: "(?<=SN:\")[0-9a-zA-Z]*(?=\")", options: .regularExpression) {
-                                article.sn = scriptText.substring(with: range)
-                            } else {
-                                print("Error occurred when parsing the sn of the article.")
-                                errorHandler("解析文章 sn 错误，请重试。")
-                                return
-                            }
-                            article.content = articleContent
-                            appDelegate.saveContext()
-                            completionHandler()
-                        } else {
-                            print("Failed to init the Kanna object.")
-                            errorHandler("内部错误，请重试。")
-                            return
-                        }
-                    }
-                }
-            }
-            task.resume()
-        }
-    }
-    
-    // Load more article
-    func loadMore(completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
-        if HTTPFetcher.loadMoreParam == nil || HTTPFetcher.loadMoreToken == nil {
-            print("Load more token error.")
+    func fetchContent(article: ArticleMO, articleURL: String, handler: @escaping (AsyncResult)->Void) {
+        guard let url = URL(string: articleURL) else {
+            // failed to create URL object
+            handler(.Failure(HTTPFetcherError(message: "failed to create URL object", kind: .internalError)))
             return
         }
-        // Set the query items
-        let epochTime = Int64(NSDate().timeIntervalSince1970 * 1000)
-        let urlComponents = NSURLComponents(string: HTTPFetcher.loadMoreURL)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: HTTPFetcher.loadMoreParam!, value: HTTPFetcher.loadMoreToken!),
-            URLQueryItem(name: "type", value: "all"),
-            URLQueryItem(name: "page", value: "\(HTTPFetcher.nextPage)"),
-            URLQueryItem(name: "_", value: "\(epochTime)")
-        ]
-        if let url = urlComponents?.url {
-            // Set the request header, otherwise the app cannot get the right more data.
-            var request = URLRequest(url: url)
-            // Important: The return json will be empty without the referer header.
-            request.setValue("\(HTTPFetcher.homePageURL)/", forHTTPHeaderField: "Referer")
-            let task = URLSession.shared.dataTask(with: request) {
-                (data, response, error) in
-                if let error = error {
-                    print("Error: \(error)")
-                } else if let data = data {
-                    DispatchQueue.main.async {
-                        var resJSON: [String: Any]? = nil
-                        do {
-                            resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        } catch {
-                            let nserror = error as NSError
-                            errorHandler("Failed to serialize the JSON when load more.\nError: \(nserror), detail: \(nserror.userInfo)")
-                            return
-                        }
-                        if let resJSON = resJSON,
-                            let list = resJSON["result"] as? [String: Any], let moreArticlesList = list["list"] as? [Any],
-                            let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                            for entity in moreArticlesList {
-                                let _article = entity as? [String: Any]
-                                let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
-                                article.id = Int64((_article?["sid"] as? String)!)!
-                                article.url = _article?["url_show"] as? String
-                                article.title = _article?["title"] as? String
-                                article.commentCount = Int16((_article?["comments"] as? String)!)!
-                                article.thumbURL = _article?["thumb"] as? String
-                                article.time = HTTPFetcher.dateFormatter.date(from: _article?["inputtime"] as! String)! as NSDate
-                            }
-                            appDelegate.saveContext()
-                        } else {
-                            errorHandler("Failed to parse the response JSON.")
-                            return
-                        }
-                        HTTPFetcher.nextPage += 1
-                        completionHandler()
-                    }
+        let task = URLSession.shared.dataTask(with: url) {
+            (data, response, error) in
+            if let error = error {
+                handler(.Failure(error))
+                return
+            }
+            guard let data = data else {
+                // the retrieved data is nil
+                handler(.Failure(HTTPFetcherError(message: "retried homepage data is nil", kind: .dataError)))
+                return
+            }
+            DispatchQueue.main.async {
+                do {
+                    try self.parseContent(data: data, article: article)
+                } catch {
+                    handler(.Failure(error))
                 }
             }
-            task.resume()
         }
+        task.resume()
     }
     
     // Fetch the comments of the article
@@ -246,91 +185,121 @@ class HTTPFetcher {
     
     // MARK: - Private functions
     
-    private func parseArticle(data: Data, completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
-        if let html = String(data: data, encoding: .utf8), let doc = HTML(html: html, encoding: .utf8) {
-            // Set the load more token and param
-            HTTPFetcher.nextPage = 2
-            if let homeMoreTokenElement = doc.at_xpath("//meta[@name='csrf-token']") {
-                HTTPFetcher.loadMoreToken = homeMoreTokenElement["content"]!
-            } else {
-                print("Fatal error: fail to parse csrf-token.")
-                errorHandler("解析 load more 参数失败，请重试。")
-                return
-            }
-            if let loadMoreParamElement = doc.at_xpath("//meta[@name='csrf-param']") {
-                HTTPFetcher.loadMoreParam = loadMoreParamElement["content"]!
-            } else {
-                print("Fatal error: fail to parse csrf-param.")
-                errorHandler("解析 load more 参数失败，请重试。")
-                return
+    private func parseArticleList(data: Data) throws {
+        guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+            // failed to convert to [String: Any]
+            throw HTTPFetcherError(message: "failed to convert to [String: Any]", kind: .parserError)
+        }
+
+        guard let result = json["result"] as? [String: Any] else {
+            // failed to parse the json. key: result
+            throw HTTPFetcherError(message: "failed to parse the json. key: result", kind: .parserError)
+        }
+
+        guard let list = result["list"] as? [Any] else {
+            // failed to parse the json. key: list
+            throw HTTPFetcherError(message: "failed to parse the json. key: list", kind: .parserError)
+        }
+
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            // failed to get the shared app delegate
+            throw HTTPFetcherError(message: "failed to get the shared app delegate", kind: .internalError)
+        }
+
+        for entry in list {
+            guard let articleEntry = entry as? [String: Any] else {
+                // failed to parse the json. entry in list
+                throw HTTPFetcherError(message: "failed to parse the json. entry in list", kind: .parserError)
             }
             
-            // Process the downloaded item div
-            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                for itemDiv in doc.xpath("//div[@class='items-area']/div[@class='item']") {
-                    // Parse the title and url
-                    let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
-                    if let urlElement = itemDiv.at_xpath(".//dl/dt/a") {
-                        let url = urlElement["href"]!
-                        article.url = url
-                        article.title = urlElement.content!
-                        if let range = url.range(of: "\\d+(?=\\.htm)", options: .regularExpression), let id = Int64(url.substring(with: range)) {
-                            article.id = id
-                        } else {
-                            print("Fatal error occurred when parsing the article id.")
-                            errorHandler("无法解析文章 id，请重试。")
-                            return
-                        }
-                    } else {
-                        print("Fatal error occurred when parsing the article url.")
-                        errorHandler("无法解析文章 URL，请重试。")
-                        return
-                    }
-                    // Parse the submitted time and the comment number
-                    if let statusElement = itemDiv.at_xpath(".//ul[@class='status']/li"), let statusString = statusElement.content {
-                        if let range = statusString.range(of: "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}", options: .regularExpression) {
-                            if let date = HTTPFetcher.dateFormatter.date(from: statusString.substring(with: range)) {
-                                article.time = date as NSDate
-                            } else {
-                                print("Error when converting the date.")
-                                errorHandler("转换时间格式错误，请重试。")
-                                return
-                            }
-                        } else {
-                            print("Fatal error occurred when parsing the article time.")
-                            errorHandler("解析文章时间错误，请重试。")
-                            return
-                        }
-                        if let range = statusString.range(of: "\\d+(?=个意见)", options: .regularExpression) {
-                            article.commentCount = Int16(statusString.substring(with: range))!
-                        } else {
-                            print("Fatal error occurred when parsing the article comment count.")
-                            errorHandler("解析文章评论数量错误，请重试。")
-                            return
-                        }
-                    } else {
-                        print("Fatal error occurred when parsing the status.")
-                        errorHandler("解析文章状态错误，请重试。")
-                        return
-                    }
-                    // Parse the thumb url
-                    if let thumbDiv = itemDiv.at_xpath(".//img") {
-                        article.thumbURL = thumbDiv["src"]!
-                    } else {
-                        print("Fatal error occurred when parsing the thumb.")
-                        errorHandler("解析文章缩略图链接错误，请重试。")
-                        return
-                    }
-                }
-                // Save to the Core Data
-                // Note: This step is error prone.
-                appDelegate.saveContext()
-                // Call the out completion handler
-                completionHandler()
-            } else {
-                print("Failed to get the app delegate.")
-                errorHandler("内部错误，请重试。")
+            let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
+            
+            guard let id = articleEntry["sid"] as? String else {
+                // failed to parse the json. entry: sid
+                throw HTTPFetcherError(message: "failed to parse the json. entry: sid", kind: .parserError)
             }
+            
+            guard let url = articleEntry["url_show"] as? String else {
+                // failed to parse the json. entry: url_show
+                throw HTTPFetcherError(message: "failed to parse the json. entry: url_show", kind: .parserError)
+            }
+            
+            guard let title = articleEntry["title"] as? String else {
+                // failed to parse the json. entry: title
+                throw HTTPFetcherError(message: "failed to parse the json. entry: title", kind: .parserError)
+            }
+            
+            guard let commentCount = articleEntry["comments"] as? String else {
+                // failed to parse the json. entry: comments
+                throw HTTPFetcherError(message: "failed to parse the json. entry: comments", kind: .parserError)
+            }
+            
+            guard let thumbURL = articleEntry["thumb"] as? String else {
+                // failed to parse the json. entry: thumb
+                throw HTTPFetcherError(message: "failed to parse the json. entry: thumb", kind: .parserError)
+            }
+            
+            guard let timeString = articleEntry["inputtime"] as? String else {
+                // failed to parse the json. entry: inputtime
+                throw HTTPFetcherError(message: "failed to parse the json. entry: inputtime", kind: .parserError)
+            }
+
+            article.id = Int64(id)!
+            article.url = url
+            article.title = title
+            article.commentCount = Int16(commentCount)!
+            article.thumbURL = thumbURL
+            article.time = HTTPFetcher.dateFormatter.date(from: timeString)! as NSDate
         }
+        
+        // save the context
+        appDelegate.saveContext()
+    }
+    
+    private func parseContent(data: Data, article: ArticleMO) throws {
+        guard let html = String(data: data, encoding: .utf8) else {
+            // failed to decode the string
+            throw HTTPFetcherError(message: "failed to decode the string", kind: .dataError)
+        }
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            // failed to get the shared app delegate
+            throw HTTPFetcherError(message: "failed to get the shared app delegate", kind: .internalError)
+        }
+
+        let articleContent = ArticleContentMO(context: appDelegate.persistentContainer.viewContext)
+        articleContent.id = article.id
+        
+        let doc = try SwiftSoup.parse(html)
+        
+        // parse summary
+        if let summary = try doc.select(".article-summary > p").first() {
+            articleContent.summary = try summary.html()
+        } else {
+            // failed to extract the summary
+        }
+        
+        // parse content
+        articleContent.content = ""
+        let contents = try doc.select(".article-content > p")
+        for phrase in contents {
+            try articleContent.content?.append(phrase.html())
+        }
+        article.content = articleContent
+        
+        // parse sn
+        if let script = try doc.select(".pageFooter + script").first() {
+            let scriptText = try script.text()
+            guard let range = scriptText.range(of: "(?<=SN:\")[0-9a-zA-Z]*(?=\")",
+                                               options: .regularExpression) else {
+                // failed to extract the sn
+                throw HTTPFetcherError(message: "failed to extract the sn", kind: .parserError)
+            }
+            article.sn = scriptText.substring(with: range)
+        } else {
+            // failed to extract the pageFooter's adjacent sibling
+        }
+        
+        // save the article
+        appDelegate.saveContext()
     }
 }

@@ -42,17 +42,17 @@ class ArticleViewController: UIViewController {
     
     // MARK: - User defined functions
     
-    func loadArticleContent() {
+    private func loadArticleContent() {
         if let content = article.content {
             articleContent = content
             updateWebView()
         } else {
             let httpFetcher = HTTPFetcher()
-            httpFetcher.fetchContent(article: article, articleURL: article.url!, completionHandler: loadArticleContent, errorHandler: fetchDataError)
+            httpFetcher.fetchContent(article: article, articleURL: article.url!, handler:  fetchDataHandler(result:))
         }
     }
     
-    func updateWebView() {
+    private func updateWebView() {
         let htmlURL = Bundle.main.url(forResource: "article", withExtension: "html")!
         var htmlTemplate: String?
         do {
@@ -71,11 +71,18 @@ class ArticleViewController: UIViewController {
         }
     }
     
-    func fetchDataError(errorMessage error: String) {
-        print(error)
-        let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-        present(alert, animated: true, completion: nil)
+    // MARK: - Error handler
+    private func fetchDataHandler(result: AsyncResult) {
+        switch result {
+        case .Success:
+            loadArticleContent()
+        case .Failure(let error):
+            // debug info
+            print(error)
+            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
     }
     
 }

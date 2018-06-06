@@ -7,7 +7,6 @@
 //
 
 import UIKit
-//import Kanna
 import CoreData
 
 class ArticleListViewController: UITableViewController, NSFetchedResultsControllerDelegate {
@@ -26,7 +25,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         // Add the refresh control
         refreshControl = UIRefreshControl()
         if let refreshControl = refreshControl {
-            refreshControl.addTarget(self, action: #selector(ArticleListViewController.getData), for: .valueChanged)
+            refreshControl.addTarget(self, action: #selector(ArticleListViewController.updateTimeline), for: .valueChanged)
             refreshControl.attributedTitle = NSAttributedString.init(string: "下拉更新")
             tableView.addSubview(refreshControl)
         }
@@ -79,8 +78,8 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if scrollView == tableView {
             if ((scrollView.contentOffset.y + scrollView.frame.size.height) >= scrollView.contentSize.height + 40) {
-                print("Ready to load more...")
-                loadMore()
+                print("load more")
+                loadMoreTimeline()
             }
         }
     }
@@ -96,11 +95,11 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     
     // MARK: - User defined function
     
-    func configureDetailsForCell(_ cell: ArticleListCell, withArticleListItem item: ArticleMO) {
+    private func configureDetailsForCell(_ cell: ArticleListCell, withArticleListItem item: ArticleMO) {
         cell.configureForArticleListCell(item)
     }
     
-    func fetchDataFromLocalStorage() {
+    private func fetchDataFromLocalStorage() {
         let limit = articlesList.count + 30
         fetchRequest.fetchLimit = limit
         do {
@@ -118,31 +117,31 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         }
     }
     
-    func getData() {
-        httpFetcher.fetchHomePage(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
+    private func loadMoreTimeline() {
+        httpFetcher.fetchTimeline(loadMore: true, handler: fetchDataHandler(result:))
     }
     
-    func loadMore() {
-        httpFetcher.loadMore(completionHandler: fetchDataFromLocalStorage, errorHandler: fetchDataError)
+    @objc func updateTimeline() {
+        httpFetcher.fetchTimeline(loadMore: false, handler: fetchDataHandler(result:))
     }
     
     // MARK: - Error handler
     
-    func fetchDataError(errorMessage error: String) {
-        print(error)
-        // End freshing if needed
-        if refreshControl != nil && refreshControl!.isRefreshing {
-            refreshControl!.endRefreshing()
-        }
-        let alert = UIAlertController(title: "Error", message: error, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-        present(alert, animated: true, completion: nil)
-        
-        // End freshing if needed
-        if let refreshControl = refreshControl, refreshControl.isRefreshing {
-            refreshControl.endRefreshing()
+    private func fetchDataHandler(result: AsyncResult) {
+        switch result {
+        case .Success:
+            fetchDataFromLocalStorage()
+        case .Failure(let error):
+            // debug info
+            print(error)
+            // End freshing if needed
+            if let refreshControl = refreshControl, refreshControl.isRefreshing {
+                refreshControl.endRefreshing()
+            }
+            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            present(alert, animated: true, completion: nil)
         }
     }
-    
 }
 
