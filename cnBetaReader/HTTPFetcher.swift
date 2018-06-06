@@ -87,6 +87,7 @@ class HTTPFetcher {
             DispatchQueue.main.async {
                 do {
                     try self.parseContent(data: data, article: article)
+                    handler(.Success)
                 } catch {
                     handler(.Failure(error))
                 }
@@ -288,11 +289,11 @@ class HTTPFetcher {
         
         // parse sn
         if let script = try doc.select(".pageFooter + script").first() {
-            let scriptText = try script.text()
+            let scriptText = try script.html()
             guard let range = scriptText.range(of: "(?<=SN:\")[0-9a-zA-Z]*(?=\")",
                                                options: .regularExpression) else {
                 // failed to extract the sn
-                throw HTTPFetcherError(message: "failed to extract the sn", kind: .parserError)
+                throw HTTPFetcherError(message: "failed to extract the sn. \(scriptText)", kind: .parserError)
             }
             article.sn = scriptText.substring(with: range)
         } else {
