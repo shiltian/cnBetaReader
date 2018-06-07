@@ -97,7 +97,8 @@ class HTTPFetcher {
     }
     
     // Fetch the comments of the article
-    func fetchCommentsOfArticle(article: ArticleMO, completionHandler: @escaping ()->Void, errorHandler: @escaping (_: String)->Void) {
+    func fetchCommentsOfArticle(article: ArticleMO, completionHandler: @escaping ()->Void,
+                                errorHandler: @escaping (_: String)->Void) {
         let urlComponents = NSURLComponents(string: HTTPFetcher.fetchCommentsURL)
         urlComponents?.queryItems = [
             URLQueryItem(name: "op", value: "1,\(article.id),\(article.sn!)")
@@ -206,6 +207,10 @@ class HTTPFetcher {
             // failed to get the shared app delegate
             throw HTTPFetcherError(message: "failed to get the shared app delegate", kind: .internalError)
         }
+        
+        let context = appDelegate.persistentContainer.viewContext
+        
+        let fetchRequest: NSFetchRequest<ArticleMO> = ArticleMO.fetchRequest()
 
         for entry in list {
             guard let articleEntry = entry as? [String: Any] else {
@@ -213,11 +218,35 @@ class HTTPFetcher {
                 throw HTTPFetcherError(message: "failed to parse the json. entry in list", kind: .parserError)
             }
             
-            let article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
+            var _article: ArticleMO?
             
             guard let id = articleEntry["sid"] as? String else {
                 // failed to parse the json. entry: sid
                 throw HTTPFetcherError(message: "failed to parse the json. entry: sid", kind: .parserError)
+            }
+            
+            guard let commentCount = articleEntry["comments"] as? String else {
+                // failed to parse the json. entry: comments
+                throw HTTPFetcherError(message: "failed to parse the json. entry: comments", kind: .parserError)
+            }
+            
+            fetchRequest.predicate = NSPredicate(format: "id = \(id)")
+            
+            let articles = try context.fetch(fetchRequest)
+            
+            if articles.count == 0 {
+                _article = ArticleMO(context: appDelegate.persistentContainer.viewContext)
+            } else if articles.count == 1 {
+                // the article exists, just update the comment count, and move to the next one
+                _article = articles[0]
+                _article!.commentCount = Int16(commentCount)!
+                continue
+            } else {
+                throw HTTPFetcherError(message: "more than one elements with the same id", kind: .internalError)
+            }
+            
+            guard let article = _article else {
+                throw HTTPFetcherError(message: "article object is nil", kind: .internalError)
             }
             
             guard let url = articleEntry["url_show"] as? String else {
@@ -228,11 +257,6 @@ class HTTPFetcher {
             guard let title = articleEntry["title"] as? String else {
                 // failed to parse the json. entry: title
                 throw HTTPFetcherError(message: "failed to parse the json. entry: title", kind: .parserError)
-            }
-            
-            guard let commentCount = articleEntry["comments"] as? String else {
-                // failed to parse the json. entry: comments
-                throw HTTPFetcherError(message: "failed to parse the json. entry: comments", kind: .parserError)
             }
             
             guard let thumbURL = articleEntry["thumb"] as? String else {

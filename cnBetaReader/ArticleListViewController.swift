@@ -112,6 +112,10 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
             print(error)
         }
         // End freshing if needed
+        endRefreshControl()
+    }
+    
+    private func endRefreshControl() {
         if let refreshControl = refreshControl, refreshControl.isRefreshing {
             refreshControl.endRefreshing()
         }
@@ -135,9 +139,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
             // debug info
             print(error)
             // End freshing if needed
-            if let refreshControl = refreshControl, refreshControl.isRefreshing {
-                refreshControl.endRefreshing()
-            }
+            endRefreshControl()
             let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
             present(alert, animated: true, completion: nil)
