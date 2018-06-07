@@ -23,7 +23,7 @@ class ArticleViewController: UIViewController {
         
         // Set the comment button appearance
         commentButton.title = "\(article.commentCount)评论"
-        commentButton.setTitleTextAttributes([NSFontAttributeName: UIFont.systemFont(ofSize: 15)], for: .normal)
+        commentButton.setTitleTextAttributes([NSAttributedStringKey.font: UIFont.systemFont(ofSize: 15)], for: .normal)
         let barButtonImage = UIImage(named: "bar_button")?.resizableImage(withCapInsets: UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10))
         commentButton.setBackgroundImage(barButtonImage, for: .normal, barMetrics: .default)
         

@@ -125,7 +125,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         httpFetcher.fetchTimeline(loadMore: true, handler: fetchDataHandler(result:))
     }
     
-    @objc func updateTimeline() {
+    @objc private func updateTimeline() {
         httpFetcher.fetchTimeline(loadMore: false, handler: fetchDataHandler(result:))
     }
     

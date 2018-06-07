@@ -195,7 +195,7 @@
 					94C48BFE1C51151F008946B0 = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = F9M3UZ669L;
-						LastSwiftMigration = 0820;
+						LastSwiftMigration = 0940;
 					};
 				};
 			};
@@ -414,7 +414,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -434,7 +435,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tsl.cnBetaReader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
