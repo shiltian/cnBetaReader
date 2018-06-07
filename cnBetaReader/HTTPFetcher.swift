@@ -23,7 +23,6 @@ class HTTPFetcher {
     }
     
     // MARK: - APIs
-    // TODO: - Refine these APIs without the errorHandler
 
     // Fetch home page
     func fetchTimeline(loadMore: Bool, handler: @escaping (AsyncResult)->Void) {
@@ -97,92 +96,46 @@ class HTTPFetcher {
     }
     
     // Fetch the comments of the article
-    func fetchCommentsOfArticle(article: ArticleMO, completionHandler: @escaping ()->Void,
-                                errorHandler: @escaping (_: String)->Void) {
-        let urlComponents = NSURLComponents(string: HTTPFetcher.fetchCommentsURL)
-        urlComponents?.queryItems = [
+    func fetchComments(article: ArticleMO, handler: @escaping (AsyncResult)->Void) {
+        guard let urlComponents = NSURLComponents(string: HTTPFetcher.fetchCommentsURL) else {
+            // failed to create the NSURLComponents
+            handler(.Failure(HTTPFetcherError(message: "failed to create the NSURLComponents", kind: .internalError)))
+            return
+        }
+        
+        urlComponents.queryItems = [
             URLQueryItem(name: "op", value: "1,\(article.id),\(article.sn!)")
         ]
-        if let url = urlComponents?.url {
-            let task = URLSession.shared.dataTask(with: url) {
-                (data, response, error) in
-                if let error = error {
-                    errorHandler("Error: \(error)")
-                } else if let data = data {
-                    DispatchQueue.main.async {
-                        var resJSON: [String: Any]? = nil
-                        do {
-                            resJSON = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                        } catch {
-                            let nserror = error as NSError
-                            errorHandler("Failed to serialize the JSON when fetch comments.\nError: \(nserror), detail: \(nserror.userInfo)")
-                            return
-                        }
-                        
-                        if let results = resJSON?["result"] as? [String: Any],
-                            let cmntlist = results["cmntlist"] as? [Any],
-                            let cmntstore = results["cmntstore"] as? [String: Any] {
-                            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                                // Update the count of comments
-                                article.commentCount = Int16(cmntlist.count)
-                                var commentsDict: [Int64: CommentMO] = [:]
-                                for e in cmntlist {
-                                    if let cmnt = e as? [String: String], let _tid = cmnt["tid"], let tid = Int64(_tid) {
-                                        let comment = CommentMO(context: appDelegate.persistentContainer.viewContext)
-                                        comment.tid = tid
-                                        commentsDict[tid] = comment
-                                    } else {
-                                        errorHandler("Error when converting to JSON.")
-                                        return
-                                    }
-                                }
-                                for cmnt in commentsDict {
-                                    let comment = cmnt.value
-                                    let tid = cmnt.key
-                                    if let cmntDict = cmntstore["\(tid)"] as? [String: Any] {
-                                        // Set the parent node
-                                        if let parent = cmntDict["pid"] as? String, let pid = Int64(parent) {
-                                            if pid != 0 {
-                                                comment.parent = commentsDict[pid]
-                                            }
-                                        }
-                                        // Set the contents
-                                        comment.content = cmntDict["comment"] as? String
-                                        comment.from = cmntDict["host_name"] as? String
-                                        comment.name = cmntDict["name"] as? String
-                                        // Set the date
-                                        let dateFormatter = DateFormatter()
-                                        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                                        if let date = cmntDict["date"] as? String,  let time = dateFormatter.date(from: date) {
-                                            comment.time = time as NSDate
-                                        }
-                                        // Set the like and dislike
-                                        if let score = cmntDict["score"] as? String, let like = Int16(score) {
-                                            comment.like = like
-                                        }
-                                        if let reason = cmntDict["reason"] as? String, let dislike = Int16(reason) {
-                                            comment.dislike = dislike
-                                        }
-                                        comment.article = article
-                                    } else {
-                                        errorHandler("Error when parsing the comment content.")
-                                        return
-                                    }
-                                }
-                                appDelegate.saveContext()
-                            } else {
-                                errorHandler("Error when getting the app delegate.")
-                                return
-                            }
-                        }
-                        completionHandler()
-                    }
+        
+        guard let url = urlComponents.url else {
+            // failed to get the url from the urlComponents
+            handler(.Failure(HTTPFetcherError(message: "failed to get the url from the urlComponents",
+                                              kind: .internalError)))
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) {
+            (data, response, error) in
+            if let error = error {
+                handler(.Failure(error))
+                return
+            }
+            guard let data = data else {
+                // the retrieved data is nil
+                handler(.Failure(HTTPFetcherError(message: "retried homepage data is nil", kind: .dataError)))
+                return
+            }
+            
+            DispatchQueue.main.async {
+                do {
+                    try self.parseComment(data: data, article: article)
+                    handler(.Success)
+                } catch {
+                    handler(.Failure(error))
                 }
             }
-            task.resume()
-        } else {
-            errorHandler("Error occurred when get the url of load more.")
         }
+        task.resume()
     }
     
     // MARK: - Private functions
@@ -286,6 +239,7 @@ class HTTPFetcher {
             // failed to decode the string
             throw HTTPFetcherError(message: "failed to decode the string", kind: .dataError)
         }
+        
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
             // failed to get the shared app delegate
             throw HTTPFetcherError(message: "failed to get the shared app delegate", kind: .internalError)
@@ -327,4 +281,84 @@ class HTTPFetcher {
         // save the article
         appDelegate.saveContext()
     }
+
+    private func parseComment(data: Data, article: ArticleMO) throws {
+        guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+            // failed to convert to [String: Any]
+            throw HTTPFetcherError(message: "failed to convert to [String: Any]", kind: .parserError)
+        }
+        
+        guard let result = json["result"] as? [String: Any] else {
+            // failed to parse the key: json[result]
+            throw HTTPFetcherError(message: "failed to parse the key: json[result]", kind: .parserError)
+        }
+        
+        guard let commentList = result["cmntlist"] as? [[String: Any]] else {
+            // failed to parse the key: result[cmntlist]
+            throw HTTPFetcherError(message: "failed to parse the key: result[cmntlist]", kind: .parserError)
+        }
+        
+        guard let commentStore = result["cmntstore"] as? [String: Any] else {
+            // failed to parse the key: result[cmntstore]
+            throw HTTPFetcherError(message: "failed to parse the key: result[cmntstore]", kind: .parserError)
+        }
+        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            // failed to get the shared app delegate
+            throw HTTPFetcherError(message: "failed to get the shared app delegate", kind: .internalError)
+        }
+        
+        // Update the count of comments
+        article.commentCount = Int16(commentList.count)
+        
+        var commentsDict: [Int64: CommentMO] = [:]
+        for elem in commentList {
+            guard let tid = elem["tid"] as? String else {
+                // failed to parse the key: elem[tid]
+                throw HTTPFetcherError(message: "failed to parse the key: elem[tid]", kind: .internalError)
+            }
+            let commentMO = CommentMO(context: appDelegate.persistentContainer.viewContext)
+            let tid_ = Int64(tid)!
+            commentMO.tid = tid_
+            commentsDict[tid_] = commentMO
+        }
+        
+        for cmnt in commentsDict {
+            let comment = cmnt.value, tid = cmnt.key
+            
+            guard let commentDict = commentStore["\(tid)"] as? [String: Any] else {
+                // failed to parse the key: commentStore[tid]
+                throw HTTPFetcherError(message: "failed to parse the key: commentStore[tid]", kind: .internalError)
+            }
+            
+            // Set the parent node
+            if let parent = commentDict["pid"] as? String, let pid = Int64(parent), pid != 0 {
+                comment.parent = commentsDict[pid]
+            }
+            
+            // Set the contents
+            comment.content = commentDict["comment"] as? String
+            comment.from = commentDict["host_name"] as? String
+            comment.name = commentDict["name"] as? String
+            
+            // Set the date
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            if let date = commentDict["date"] as? String, let time = dateFormatter.date(from: date) {
+                comment.time = time as NSDate
+            }
+            
+            // Set the like and dislike
+            if let score = commentDict["score"] as? String, let like = Int16(score) {
+                comment.like = like
+            }
+            if let reason = commentDict["reason"] as? String, let dislike = Int16(reason) {
+                comment.dislike = dislike
+            }
+            
+            comment.article = article
+        }
+        appDelegate.saveContext()
+    }
+    
 }

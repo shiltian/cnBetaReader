@@ -54,7 +54,7 @@ class CommentViewController: UITableViewController {
     
     func fetchComments() {
         let httpFetcher = HTTPFetcher()
-        httpFetcher.fetchCommentsOfArticle(article: article, completionHandler: updateView, errorHandler: errorHandler)
+        httpFetcher.fetchComments(article: article, handler: fetchDataHandler)
     }
     
     func updateView() {
@@ -63,11 +63,19 @@ class CommentViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func errorHandler(errorMessage: String) {
-        print(errorMessage)
-        let alert = UIAlertController(title: "Error", message: errorMessage, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-        present(alert, animated: true, completion: nil)
+    // MARK: - Error handler
+    
+    private func fetchDataHandler(result: AsyncResult) {
+        switch result {
+        case .Success:
+            updateView()
+        case .Failure(let error):
+            // debug info
+            print(error)
+            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            present(alert, animated: true, completion: nil)
+        }
     }
     
     func configureDetailsForCell(cell: CommentCell, withArticleListItem item: CommentMO) {
