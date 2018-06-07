@@ -53,7 +53,7 @@ class ArticleListCell: UITableViewCell {
                     }
                     if let url = url, let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
                         DispatchQueue.main.async {
-                            article.thumb = NSData(data: data)
+                            article.thumb = data
                             self.thumbnailView.image = image
                             if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
                                 appDelegate.saveContext()

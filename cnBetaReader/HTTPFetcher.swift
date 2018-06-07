@@ -227,7 +227,7 @@ class HTTPFetcher {
             article.title = title
             article.commentCount = Int16(commentCount)!
             article.thumbURL = thumbURL
-            article.time = HTTPFetcher.dateFormatter.date(from: timeString)! as NSDate
+            article.time = HTTPFetcher.dateFormatter.date(from: timeString)
         }
         
         // save the context
@@ -345,7 +345,7 @@ class HTTPFetcher {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
             if let date = commentDict["date"] as? String, let time = dateFormatter.date(from: date) {
-                comment.time = time as NSDate
+                comment.time = time
             }
             
             // Set the like and dislike

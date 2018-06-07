@@ -52,12 +52,12 @@ class CommentViewController: UITableViewController {
     
     // MARK: - User defined functions
     
-    func fetchComments() {
+    private func fetchComments() {
         let httpFetcher = HTTPFetcher()
         httpFetcher.fetchComments(article: article, handler: fetchDataHandler)
     }
     
-    func updateView() {
+    private func updateView() {
         comments = article.comments?.allObjects as? [CommentMO]
         comments?.sort { $0.time!.timeIntervalSinceReferenceDate > $1.time!.timeIntervalSinceReferenceDate }
         tableView.reloadData()
@@ -72,13 +72,12 @@ class CommentViewController: UITableViewController {
         case .Failure(let error):
             // debug info
             print(error)
-            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-            present(alert, animated: true, completion: nil)
+            // present alert pop up view
+            presentAlertView(message: error.localizedDescription, present: present)
         }
     }
     
-    func configureDetailsForCell(cell: CommentCell, withArticleListItem item: CommentMO) {
+    private func configureDetailsForCell(cell: CommentCell, withArticleListItem item: CommentMO) {
         cell.configureForCell(comment: item)
     }
     

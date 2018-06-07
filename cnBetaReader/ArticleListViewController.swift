@@ -25,7 +25,8 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         // Add the refresh control
         refreshControl = UIRefreshControl()
         if let refreshControl = refreshControl {
-            refreshControl.addTarget(self, action: #selector(ArticleListViewController.updateTimeline), for: .valueChanged)
+            refreshControl.addTarget(self, action: #selector(ArticleListViewController.updateTimeline),
+                                     for: .valueChanged)
             refreshControl.attributedTitle = NSAttributedString.init(string: "下拉更新")
             tableView.addSubview(refreshControl)
         }
@@ -43,15 +44,6 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-    }
-    
-    func initFetchResultController() {
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
-        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-            let context = appDelegate.persistentContainer.viewContext
-            fetchResultController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-            fetchResultController.delegate = self
-        }
     }
     
     // MARK: - Data Source
@@ -121,6 +113,17 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         }
     }
     
+    private func initFetchResultController() {
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "time", ascending: false)]
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            let context = appDelegate.persistentContainer.viewContext
+            fetchResultController = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                               managedObjectContext: context, sectionNameKeyPath: nil,
+                                                               cacheName: nil)
+            fetchResultController.delegate = self
+        }
+    }
+    
     private func loadMoreTimeline() {
         httpFetcher.fetchTimeline(loadMore: true, handler: fetchDataHandler(result:))
     }
@@ -140,9 +143,8 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
             print(error)
             // End freshing if needed
             endRefreshControl()
-            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-            present(alert, animated: true, completion: nil)
+            // present alert pop up view
+            presentAlertView(message: error.localizedDescription, present: present)
         }
     }
 }

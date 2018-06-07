@@ -24,7 +24,9 @@ class ArticleViewController: UIViewController {
         // Set the comment button appearance
         commentButton.title = "\(article.commentCount)评论"
         commentButton.setTitleTextAttributes([NSAttributedStringKey.font: UIFont.systemFont(ofSize: 15)], for: .normal)
-        let barButtonImage = UIImage(named: "bar_button")?.resizableImage(withCapInsets: UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10))
+        let barButtonImage = UIImage(named: "bar_button")?.resizableImage(withCapInsets: UIEdgeInsets(top: 0, left: 10,
+                                                                                                      bottom: 0,
+                                                                                                      right: 10))
         commentButton.setBackgroundImage(barButtonImage, for: .normal, barMetrics: .default)
         
         loadArticleContent()
@@ -54,24 +56,24 @@ class ArticleViewController: UIViewController {
     
     private func updateWebView() {
         let htmlURL = Bundle.main.url(forResource: "article", withExtension: "html")!
-        var htmlTemplate: String?
         do {
-            htmlTemplate = try String(contentsOf: htmlURL, encoding: .utf8)
-        } catch {
-            htmlTemplate = nil
-        }
-        if var htmlTemplate = htmlTemplate {
+            var htmlTemplate = try String(contentsOf: htmlURL, encoding: .utf8)
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "MM-dd HH:mm"
             htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- title -->", with: article.title!)
-            htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->", with: dateFormatter.string(from: article.time! as Date))
+            htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->",
+                                                             with: dateFormatter.string(from: article.time! as Date))
             htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- summary -->", with: articleContent!.summary!)
             htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: articleContent!.content!)
             webView.loadHTMLString(htmlTemplate, baseURL: Bundle.main.bundleURL)
+        } catch {
+            // present alert pop up view
+            presentAlertView(message: error.localizedDescription, present: present)
         }
     }
     
     // MARK: - Error handler
+
     private func fetchDataHandler(result: AsyncResult) {
         switch result {
         case .Success:
@@ -79,9 +81,8 @@ class ArticleViewController: UIViewController {
         case .Failure(let error):
             // debug info
             print(error)
-            let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-            present(alert, animated: true, completion: nil)
+            // present alert pop up view
+            presentAlertView(message: error.localizedDescription, present: present)
         }
     }
     
