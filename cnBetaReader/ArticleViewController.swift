@@ -60,7 +60,14 @@ class ArticleViewController: UIViewController {
     }
     
     private func updateWebView() {
-        let htmlURL = Bundle.main.url(forResource: "article", withExtension: "html")!
+        guard let articleContent = articleContent else {
+            presentAlertView(message: "ariticleContent is nil", present: present)
+            return
+        }
+        guard let htmlURL = Bundle.main.url(forResource: "article", withExtension: "html") else {
+            presentAlertView(message: "htmlURL is nil", present: present)
+            return
+        }
         do {
             var htmlTemplate = try String(contentsOf: htmlURL, encoding: .utf8)
             let dateFormatter = DateFormatter()
@@ -68,8 +75,8 @@ class ArticleViewController: UIViewController {
             htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- title -->", with: article.title!)
             htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- time -->",
                                                              with: dateFormatter.string(from: article.time! as Date))
-            htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- summary -->", with: articleContent!.summary!)
-            htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: articleContent!.content!)
+            htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- summary -->", with: articleContent.summary!)
+            htmlTemplate = htmlTemplate.replacingOccurrences(of: "<!-- content -->", with: articleContent.content!)
             webView.loadHTMLString(htmlTemplate, baseURL: Bundle.main.bundleURL)
         } catch {
             // present alert pop up view

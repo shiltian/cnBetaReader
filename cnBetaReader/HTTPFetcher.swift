@@ -257,17 +257,17 @@ class HTTPFetcher {
         let doc = try SwiftSoup.parse(html)
         
         // parse summary
-        if let summary = try doc.select(".article-summary > p").first() {
-            articleContent.summary = try summary.html()
-        } else {
-            // failed to extract the summary
+        articleContent.summary = ""
+        let summaries = try doc.select(".article-summary > p")
+        for summury in summaries {
+            try articleContent.summary?.append(summury.outerHtml())
         }
         
         // parse content
         articleContent.content = ""
         let contents = try doc.select(".article-content > p")
         for phrase in contents {
-            try articleContent.content?.append(phrase.html())
+            try articleContent.content?.append(phrase.outerHtml())
         }
         article.content = articleContent
         
