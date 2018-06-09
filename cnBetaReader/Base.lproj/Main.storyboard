@@ -133,21 +133,22 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <webView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7KI-cK-Wdu">
+                            <wkWebView contentMode="scaleToFill" allowsBackForwardNavigationGestures="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EHB-jD-vUZ">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                <dataDetectorType key="dataDetectorTypes"/>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="scrollView.bounces" value="NO"/>
-                                </userDefinedRuntimeAttributes>
-                            </webView>
+                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <wkWebViewConfiguration key="configuration">
+                                    <dataDetectorTypes key="dataDetectorTypes" none="YES"/>
+                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
+                                    <wkPreferences key="preferences"/>
+                                </wkWebViewConfiguration>
+                            </wkWebView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="I6d-cC-g40" firstAttribute="top" secondItem="7KI-cK-Wdu" secondAttribute="bottom" id="dX9-82-34G"/>
-                            <constraint firstAttribute="trailing" secondItem="7KI-cK-Wdu" secondAttribute="trailing" id="e2D-PV-HVh"/>
-                            <constraint firstItem="7KI-cK-Wdu" firstAttribute="top" secondItem="lJH-FM-4Nq" secondAttribute="top" id="s8Q-7L-miX"/>
-                            <constraint firstItem="7KI-cK-Wdu" firstAttribute="leading" secondItem="lJH-FM-4Nq" secondAttribute="leading" id="zLy-qZ-wDR"/>
+                            <constraint firstItem="I6d-cC-g40" firstAttribute="top" secondItem="EHB-jD-vUZ" secondAttribute="bottom" id="Eo8-Tk-8cC"/>
+                            <constraint firstItem="EHB-jD-vUZ" firstAttribute="top" secondItem="lJH-FM-4Nq" secondAttribute="top" id="MUg-if-fQt"/>
+                            <constraint firstItem="EHB-jD-vUZ" firstAttribute="leading" secondItem="lJH-FM-4Nq" secondAttribute="leading" id="cFs-N6-8Fw"/>
+                            <constraint firstAttribute="trailing" secondItem="EHB-jD-vUZ" secondAttribute="trailing" id="p40-ho-hhl"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="新闻" id="Nvi-GR-j1v">
@@ -161,7 +162,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="commentButton" destination="jYV-H0-Y7o" id="Q1O-iW-L4Q"/>
-                        <outlet property="webView" destination="7KI-cK-Wdu" id="ot5-Q7-5LH"/>
+                        <outlet property="webView" destination="EHB-jD-vUZ" id="yEm-qY-sGM"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QHo-Rg-2ut" userLabel="First Responder" sceneMemberID="firstResponder"/>

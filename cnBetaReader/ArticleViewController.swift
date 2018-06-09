@@ -6,13 +6,13 @@
 //  Copyright © 2016 TSL. All rights reserved.
 //
 
-import UIKit
-//import Kanna
 import CoreData
+import UIKit
+import WebKit
 
 class ArticleViewController: UIViewController {
     
-    @IBOutlet weak var webView: UIWebView!
+    @IBOutlet weak var webView: WKWebView!
     @IBOutlet weak var commentButton: UIBarButtonItem!
     
     var article: ArticleMO!
