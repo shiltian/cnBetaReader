@@ -1,14 +1,14 @@
 //
-//  MoreViewController.swift
+//  SettingsViewController.swift
 //  cnBetaReader
 //
-//  Created by Shilei Tian on 03/07/2017.
-//  Copyright © 2017 TSL. All rights reserved.
+//  Created by Shilei Tian on 2018/6/10.
+//  Copyright © 2018 TSL. All rights reserved.
 //
 
 import UIKit
 
-class MoreViewController: UITableViewController {
+class SettingsViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -17,26 +17,18 @@ class MoreViewController: UITableViewController {
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
+    // MARK: - Delegate
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.section == 1 {
-            if indexPath.row == 0 {
-                
-            } else if indexPath.row == 1 {
-                let url = URL(string: "mailto:tianshilei1992@gmail.com")
-                UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-            }
-        } else if indexPath.section == 2 {
-            
-        }
     }
-
+    
 }
