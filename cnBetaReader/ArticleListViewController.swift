@@ -11,10 +11,10 @@ import CoreData
 
 class ArticleListViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
-    var fetchResultController: NSFetchedResultsController<ArticleMO>!
-    var articlesList: [ArticleMO] = []
-    let fetchRequest: NSFetchRequest<ArticleMO> = ArticleMO.fetchRequest()
-    let httpFetcher = HTTPFetcher()
+    private var fetchResultController: NSFetchedResultsController<ArticleMO>!
+    private var articlesList: [ArticleMO] = []
+    private let fetchRequest: NSFetchRequest<ArticleMO> = ArticleMO.fetchRequest()
+    private let httpFetcher = HTTPFetcher()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -68,11 +68,10 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
     }
     
     override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if scrollView == tableView {
-            if ((scrollView.contentOffset.y + scrollView.frame.size.height) >= scrollView.contentSize.height + 40) {
-                print("load more")
-                loadMoreTimeline()
-            }
+        if scrollView == tableView,
+            (scrollView.contentOffset.y + scrollView.frame.size.height) >= scrollView.contentSize.height {
+            debugPrint("load more")
+            loadMoreTimeline()
         }
     }
     
@@ -101,7 +100,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
                 tableView.reloadData()
             }
         } catch {
-            print(error)
+            presentAlertView(message: error.localizedDescription, present: present)
         }
         // End freshing if needed
         endRefreshControl()
@@ -140,7 +139,7 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
             fetchDataFromLocalStorage()
         case .Failure(let error):
             // debug info
-            print(error)
+            debugPrint(error)
             // End freshing if needed
             endRefreshControl()
             // present alert pop up view
@@ -148,4 +147,3 @@ class ArticleListViewController: UITableViewController, NSFetchedResultsControll
         }
     }
 }
-

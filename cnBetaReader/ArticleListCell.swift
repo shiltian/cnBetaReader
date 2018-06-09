@@ -43,6 +43,7 @@ class ArticleListCell: UITableViewCell {
         if let thumb = article.thumb {
             thumbnailView.image = UIImage(data: thumb as Data)
         } else {
+            // TODO: use the fetcher to download the thumbnail
             if let url = URL(string: article.thumbURL!) {
                 let session = URLSession.shared
                 let downloadTask = session.downloadTask(with: url, completionHandler: {

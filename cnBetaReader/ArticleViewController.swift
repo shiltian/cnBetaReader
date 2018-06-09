@@ -49,8 +49,13 @@ class ArticleViewController: UIViewController {
             articleContent = content
             updateWebView()
         } else {
+            guard let _ = article.url else {
+                // present alert pop up view
+                presentAlertView(message: "the article url is nil", present: present)
+                return
+            }
             let httpFetcher = HTTPFetcher()
-            httpFetcher.fetchContent(article: article, articleURL: article.url!, handler:  fetchDataHandler(result:))
+            httpFetcher.fetchContent(article: article, handler: fetchDataHandler(result:))
         }
     }
     

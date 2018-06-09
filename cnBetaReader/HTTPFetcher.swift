@@ -66,8 +66,9 @@ class HTTPFetcher {
     }
     
     // Fetch article content
-    func fetchContent(article: ArticleMO, articleURL: String, handler: @escaping (AsyncResult)->Void) {
-        guard let url = URL(string: articleURL) else {
+    func fetchContent(article: ArticleMO, handler: @escaping (AsyncResult)->Void) {
+        // the url can't be nil otherwise this function won't be invoked
+        guard let url = URL(string: article.url!) else {
             // failed to create URL object
             handler(.Failure(HTTPFetcherError(message: "failed to create URL object", kind: .internalError)))
             return
@@ -136,6 +137,11 @@ class HTTPFetcher {
             }
         }
         task.resume()
+    }
+    
+    // Fetch the thumbnail of the article
+    func fetchThumbnail(article: ArticleMO, handler: @escaping (AsyncResult)->Void) {
+        
     }
     
     // MARK: - Private functions
@@ -273,7 +279,7 @@ class HTTPFetcher {
                 // failed to extract the sn
                 throw HTTPFetcherError(message: "failed to extract the sn. \(scriptText)", kind: .parserError)
             }
-            article.sn = scriptText.substring(with: range)
+            article.sn = String(scriptText[range])
         } else {
             // failed to extract the pageFooter's adjacent sibling
         }
@@ -361,4 +367,7 @@ class HTTPFetcher {
         appDelegate.saveContext()
     }
     
+    private func parseThumbnail(data: Data, article: ArticleMO) throws {
+        
+    }
 }
