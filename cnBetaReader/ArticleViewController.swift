@@ -42,6 +42,16 @@ class ArticleViewController: UIViewController {
         }
     }
     
+    // MARK: WKWebView
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
+        guard navigationAction.navigationType == .other || navigationAction.navigationType == .reload  else {
+            decisionHandler(.cancel)
+            return
+        }
+        decisionHandler(.allow)
+    }
+    
     // MARK: - User defined functions
     
     private func loadArticleContent() {
