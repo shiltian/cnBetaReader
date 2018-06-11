@@ -12,15 +12,6 @@ import CoreData
 class HTTPFetcher {
 
     static var page: Int8 = 2
-    static let timelineURL = "https://m.cnbeta.com/touch/default/timeline.json?page="
-    static let fetchCommentsURL = "https://www.cnbeta.com/comment/read"
-    static let dateFormatter = DateFormatter()
-    
-    static var loadMore: LoadMoreMO!
-    
-    init() {
-        HTTPFetcher.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-    }
     
     // MARK: - APIs
 
@@ -28,9 +19,9 @@ class HTTPFetcher {
     func fetchTimeline(loadMore: Bool, handler: @escaping (AsyncResult)->Void) {
         var timelineURL: String
         if loadMore {
-            timelineURL = "\(HTTPFetcher.timelineURL)\(HTTPFetcher.page)"
+            timelineURL = "https://m.cnbeta.com/touch/default/timeline.json?page=\(HTTPFetcher.page)"
         } else {
-            timelineURL = "\(HTTPFetcher.timelineURL)1"
+            timelineURL = "https://m.cnbeta.com/touch/default/timeline.json?page=1"
         }
         guard let url = URL(string: timelineURL) else {
             // Failed to create URL object
@@ -98,7 +89,7 @@ class HTTPFetcher {
     
     // Fetch the comments of the article
     func fetchComments(article: ArticleMO, handler: @escaping (AsyncResult)->Void) {
-        guard let urlComponents = NSURLComponents(string: HTTPFetcher.fetchCommentsURL) else {
+        guard let urlComponents = NSURLComponents(string: "https://www.cnbeta.com/comment/read") else {
             // failed to create the NSURLComponents
             handler(.Failure(HTTPFetcherError(message: "failed to create the NSURLComponents", kind: .internalError)))
             return
@@ -140,8 +131,39 @@ class HTTPFetcher {
     }
     
     // Fetch the thumbnail of the article
-    func fetchThumbnail(article: ArticleMO, handler: @escaping (AsyncResult)->Void) {
+    func fetchThumbnail(article: ArticleMO, handler: @escaping (AsyncResult)->Void) -> URLSessionDownloadTask? {
+        guard let thumbURL = article.thumbURL else {
+            return nil
+        }
         
+        guard let url = URL(string: thumbURL) else {
+            return nil
+        }
+        
+        let session = URLSession.shared
+        let downloadTask = session.downloadTask(with: url, completionHandler: {
+            (url, response, error) in
+            if let error = error {
+                print("Error occurred: \(error)")
+                return
+            }
+            DispatchQueue.main.async {
+                guard let url = url else {
+                    handler(.Failure(HTTPFetcherError(message: "failed to get the url", kind: .internalError)))
+                    return
+                }
+                do {
+                    let data = try Data(contentsOf: url)
+                    try self.parseThumbnail(data: data, article: article)
+                    handler(.Success)
+                } catch {
+                    handler(.Failure(error))
+                }
+            }
+        })
+        
+        downloadTask.resume()
+        return downloadTask
     }
     
     // MARK: - Private functions
@@ -233,7 +255,11 @@ class HTTPFetcher {
             article.title = title
             article.commentCount = Int16(commentCount)!
             article.thumbURL = thumbURL
-            article.time = HTTPFetcher.dateFormatter.date(from: timeString)
+
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+
+            article.time = dateFormatter.date(from: timeString)
         }
         
         // save the context
@@ -368,6 +394,11 @@ class HTTPFetcher {
     }
     
     private func parseThumbnail(data: Data, article: ArticleMO) throws {
-        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            // failed to get the shared app delegate
+            throw HTTPFetcherError(message: "failed to get the shared app delegate", kind: .internalError)
+        }
+        article.thumb = data
+        appDelegate.saveContext()
     }
 }

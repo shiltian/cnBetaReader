@@ -15,6 +15,7 @@ class ArticleListCell: UITableViewCell {
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var commentsCountLabel: UILabel!
     
+    weak var article: ArticleMO!
     var downloadTask: URLSessionDownloadTask?
     
     override func prepareForReuse() {
@@ -30,6 +31,8 @@ class ArticleListCell: UITableViewCell {
     // MARK: - User Function
     
     func configureForArticleListCell(_ article: ArticleMO) {
+        self.article = article
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MM-dd HH:mm"
         titleLabel.text = article.title
@@ -40,31 +43,26 @@ class ArticleListCell: UITableViewCell {
         }
         timeLabel.text = dateFormatter.string(from: article.time! as Date)
         commentsCountLabel.text = "\(article.commentCount)"
+        
+        setThumbnail()
+    }
+    
+    private func setThumbnail() {
         if let thumb = article.thumb {
-            thumbnailView.image = UIImage(data: thumb as Data)
+            thumbnailView.image = UIImage(data: thumb)
         } else {
-            // TODO: use the fetcher to download the thumbnail
-            if let url = URL(string: article.thumbURL!) {
-                let session = URLSession.shared
-                let downloadTask = session.downloadTask(with: url, completionHandler: {
-                    url, response, error in
-                    if let error = error {
-                        print("Error occurred: \(error)")
-                        return
-                    }
-                    if let url = url, let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-                        DispatchQueue.main.async {
-                            article.thumb = data
-                            self.thumbnailView.image = image
-                            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
-                                appDelegate.saveContext()
-                            }
-                        }
-                    }
-                })
-                downloadTask.resume()
-                self.downloadTask = downloadTask
-            }
+            let httpFetcher = HTTPFetcher()
+            downloadTask = httpFetcher.fetchThumbnail(article: article, handler: fetchDataHandler)
+        }
+    }
+    
+    private func fetchDataHandler(result: AsyncResult) {
+        switch result {
+        case .Success:
+            setThumbnail()
+        case .Failure(let error):
+            // debug info
+            debugPrint(error)
         }
     }
 }
