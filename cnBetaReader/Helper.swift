@@ -9,7 +9,7 @@
 import UIKit
 
 func presentAlertView(message: String, present: @escaping (_ viewControllerToPresent: UIViewController, _ flag: Bool, _ completion: (() -> Void)?)->Void) {
-    let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-    alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-    present(alert, true, nil)
+  let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+  alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+  present(alert, true, nil)
 }

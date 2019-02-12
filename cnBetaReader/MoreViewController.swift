@@ -9,34 +9,34 @@
 import UIKit
 
 class MoreViewController: UITableViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.section == 1 {
-            if indexPath.row == 0 {
-                
-            } else if indexPath.row == 1 {
-                let url = URL(string: "mailto:tianshilei1992@gmail.com")
-                UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-            }
-        } else if indexPath.section == 2 {
-            
-        }
+    // Uncomment the following line to preserve selection between presentations
+    // self.clearsSelectionOnViewWillAppear = false
+    
+    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+    // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+  }
+  
+  override func didReceiveMemoryWarning() {
+    super.didReceiveMemoryWarning()
+    // Dispose of any resources that can be recreated.
+  }
+  
+  override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    tableView.deselectRow(at: indexPath, animated: true)
+    if indexPath.section == 1 {
+      if indexPath.row == 0 {
+        
+      } else if indexPath.row == 1 {
+        let url = URL(string: "mailto:tianshilei1992@gmail.com")
+        UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+      }
+    } else if indexPath.section == 2 {
+      
     }
-
+  }
+  
 }

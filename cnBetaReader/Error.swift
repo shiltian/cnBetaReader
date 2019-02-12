@@ -9,17 +9,17 @@
 import Foundation
 
 enum AsyncResult {
-    case Success, Failure(Error)
+  case Success, Failure(Error)
 }
 
 struct HTTPFetcherError : Error {
-    enum ErrorKind {
-        case networkError
-        case parserError
-        case internalError
-        case dataError
-    }
-
-    let message: String
-    let kind: ErrorKind
+  enum ErrorKind {
+    case networkError
+    case parserError
+    case internalError
+    case dataError
+  }
+  
+  let message: String
+  let kind: ErrorKind
 }
